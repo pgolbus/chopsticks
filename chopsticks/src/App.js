@@ -1,47 +1,18 @@
 import React, { useState } from 'react';
 import './App.css';
-
-// Define the ASCII art for 0 to 4 fingers
-const handStates = [
-  `
- O
-/|\\
-/ \\
-  `,
-  `
- O
-/|\\
- |
-/ \\
-  `,
-  `
- O
-/|\\
-/|
-/ \\
-  `,
-  `
- O
-/|\\
-/|\\
-/ \\
-  `,
-  `
- O
-/|\\
-/|\\
-/|\\
-  `
-];
+import handStates from './handStates';
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(''));
-  const [firstClick, setFirstClick] = useState(null);
+  const fingers = 5;
+  const initialBoard = Array(9).fill('');
+  [0, 2, 6, 8].forEach(index => initialBoard[index] = 0);
+  const [board, setBoard] = useState(initialBoard);
+  // const [firstClick, setFirstClick] = useState(null);
 
   const handleClick = (index) => {
     const newBoard = [...board];
 
-    if (firstClick === null) {
+    /* if (firstClick === null) {
       // First click
       setFirstClick(index);
     } else {
@@ -50,37 +21,32 @@ function App() {
       setFirstClick(null);
       newBoard[firstClick] = '';
       newBoard[index] = '';
-    }
+    }*/
 
-    if ([0, 2, 6, 8].includes(index)) {
-      if (newBoard[index] === '') {
-        newBoard[index] = handStates[1];
-      } else {
-        let currentValueIndex = handStates.indexOf(newBoard[index]);
-        let newValueIndex = (currentValueIndex + 1) % handStates.length;
-        newBoard[index] = handStates[newValueIndex];
-      }
-    }
+    let currentValueIndex = handStates.indexOf(newBoard[index]);
+    let newValueIndex = (currentValueIndex + 1) % fingers;
+    newBoard[index] = newValueIndex;
 
     setBoard(newBoard);
+
   };
 
   return (
     <div className="App">
-      <h1>Tic Tac Toe</h1>
+      <h1>Chopsticks</h1>
       <div className="board">
         {board.map((cell, index) => (
           <div
             key={index}
             className={`square ${[0, 2, 6, 8].includes(index) ? 'clickable' : ''}`}
-            onClick={() => handleClick(index)}
+            onClick={() => [0, 2, 6, 8].includes(index) && handleClick(index)}
           >
-            <pre>{cell}</pre>
+            <pre>{[0, 2, 6, 8].includes(index) ? handStates[cell] : ''}</pre>
           </div>
         ))}
       </div>
     </div>
   );
-}
+};
 
 export default App;

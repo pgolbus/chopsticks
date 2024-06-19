@@ -7,13 +7,13 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(3, 100px);
+  grid-template-columns: repeat(3, 200px);
   grid-gap: 5px;
 }
 
 .square {
-  width: 100px;
-  height: 100px;
+  width: 200px;
+  height: 200px;
   background-color: #fff;
   border: 2px solid #000;
   display: flex;
