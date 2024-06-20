@@ -19,6 +19,29 @@ function App() {
     setPlayerTurn(playerTurn === 0 ? 1 : 0);
   };
 
+  const swap = (index, board) => {
+    const newBoard = [...board];
+    while (true) {
+      let toSwap = window.prompt('How many would you like to swap?');
+      // if it's not an integer, continue
+      if (!Number.isInteger(Number(toSwap))) {
+        window.alert('Please enter an integer');
+        continue;
+      // if it's not between 1 and newBoard[firstClick] -1, continue
+      } 
+      toSwap = Number(toSwap);
+      if (toSwap < 1 || toSwap > newBoard[firstClick] - 1) {
+        window.alert(`Please enter a number between 1 and ${newBoard[firstClick] - 1}`);
+        continue;
+      } else {
+        newBoard[firstClick] -= toSwap;
+        let current = newBoard[index];
+        newBoard[index] = (current + toSwap) % fingers;
+        return newBoard;
+      }
+    }
+  };
+
   const renderCell = (cell, index) => {
     if (playerCells.includes(index)) {
       return handStates[cell];
@@ -31,7 +54,7 @@ function App() {
 
   const handleClick = (index) => {
     console.log(board);
-    const newBoard = [...board];
+    let newBoard = [...board];
 
     if (firstClick === null) {
       // First click
@@ -51,21 +74,28 @@ function App() {
       if (index === firstClick) {
         window.alert('You must pick a different hand');
         return;
+      } else if (newBoard[index] === 0) {
+        window.alert('Cannot add fingers to an empty hand');
+        return;
       } else if (
         (playerTurn === 0 && player1.includes(index)) || 
         (playerTurn === 1 && player2.includes(index))
       ) {
-        window.alert('I haven\'t built that yet');
-        return;
-      }
-      // window.alert(`First Click: ${firstClick}, Second Click: ${index}`);
-      /* let current = newBoard[index];
-      let newValue = (current + 1) % fingers;
-      newBoard[index] = newValue; */
+        if newBoard[index] === 1 {
+          window.alert('You must pick a hand with at least two fingers');
+          return;
+        }
+        newBoard = swap(index, newBoard);
+      } else {
+        // window.alert(`First Click: ${firstClick}, Second Click: ${index}`);
+        /* let current = newBoard[index];
+        let newValue = (current + 1) % fingers;
+        newBoard[index] = newValue; */
 
-      let current = newBoard[firstClick];
-      let newValue = (current + newBoard[index]) % fingers;
-      newBoard[index] = newValue;
+        let current = newBoard[firstClick];
+        let newValue = (current + newBoard[index]) % fingers;
+        newBoard[index] = newValue;
+      }
 
       setFirstClick(null);
       flip();
