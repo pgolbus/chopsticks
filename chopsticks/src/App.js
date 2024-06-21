@@ -22,6 +22,17 @@ function App() {
     setPlayerTurn(playerTurn === 0 ? 1 : 0);
   };
 
+  const win = (newBoard) => {
+    console.log(newBoard);
+    if (playerTurn === 0) {
+      return player2cells.every(index => newBoard[index] === 0);
+    }
+    if (playerTurn === 1) {
+      return player1cells.every(index => newBoard[index] === 0);
+    }
+    return false;
+  };
+
   // Swap fingers between hands
   const swap = (index, board) => {
     const newBoard = [...board];
@@ -57,7 +68,6 @@ function App() {
   };
 
   const handleClick = (index) => {
-    console.log(board);
     let newBoard = [...board];
 
     if (firstClick === null) {
@@ -103,8 +113,12 @@ function App() {
       }
 
       setFirstClick(null);
-      flip();
       setBoard(newBoard);
+      if (win(newBoard)) {
+        window.alert(`Player ${playerTurn + 1} wins!`);
+        return;
+      }
+      flip();
     }
   };
 
