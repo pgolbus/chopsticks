@@ -5,20 +5,24 @@ import handStates from './handStates';
 function App() {
   const fingers = 5;
   const initialBoard = Array(9).fill('');
-  const player1 = [0, 6];
-  const player2 = [2, 8];
-  const playerCells = [0, 2, 6, 8];
+  const player1cells = [0, 6];
+  const player2cells = [2, 8];
+  const playerCells = [...player1cells, ...player2cells];
   const player1TextCell = 3;
+  const player1Text = "Player 1";
   const player2TextCell = 5;
+  const player2Text = "Player 2";
   playerCells.forEach(index => initialBoard[index] = 1);
   const [board, setBoard] = useState(initialBoard);
   const [firstClick, setFirstClick] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(0);
 
+   // Change between player 1 and player 2
   const flip = () => {
     setPlayerTurn(playerTurn === 0 ? 1 : 0);
   };
 
+  // Swap fingers between hands
   const swap = (index, board) => {
     const newBoard = [...board];
     while (true) {
@@ -27,9 +31,9 @@ function App() {
       if (!Number.isInteger(Number(toSwap))) {
         window.alert('Please enter an integer');
         continue;
+      }
+      toSwap = Number(toSwap); 
       // if it's not between 1 and newBoard[firstClick] -1, continue
-      } 
-      toSwap = Number(toSwap);
       if (toSwap < 1 || toSwap > newBoard[firstClick] - 1) {
         window.alert(`Please enter a number between 1 and ${newBoard[firstClick] - 1}`);
         continue;
@@ -46,9 +50,9 @@ function App() {
     if (playerCells.includes(index)) {
       return handStates[cell];
     } else if (index === player1TextCell) {
-      return 'Player 1';
+      return player1Text;
     } else if (index === player2TextCell) {
-      return 'Player 2';
+      return player2Text;
     }
   };
 
@@ -62,8 +66,8 @@ function App() {
         window.alert('Cannot start with a hand with no fingers');
         return;
       } else if ( 
-        (playerTurn === 0 && !player1.includes(index)) || 
-        (playerTurn === 1 && !player2.includes(index))
+        (playerTurn === 0 && !player1cells.includes(index)) || 
+        (playerTurn === 1 && !player2cells.includes(index))
       ) {
         window.alert('You must start with one of your own hands');
         return;
@@ -78,11 +82,12 @@ function App() {
         window.alert('Cannot add fingers to an empty hand');
         return;
       } else if (
-        (playerTurn === 0 && player1.includes(index)) || 
-        (playerTurn === 1 && player2.includes(index))
+        (playerTurn === 0 && player1cells.includes(index)) || 
+        (playerTurn === 1 && player2cells.includes(index))
       ) {
-        if newBoard[index] === 1 {
-          window.alert('You must pick a hand with at least two fingers');
+        if (newBoard[firstClick] === 1) {
+          window.alert('You must pick a hand with at least two fingers to swap from');
+          setFirstClick(null);
           return;
         }
         newBoard = swap(index, newBoard);
@@ -110,7 +115,9 @@ function App() {
         {board.map((cell, index) => (
           <div
             key={index}
-            className={`square ${playerCells.includes(index) ? 'clickable' : ''}`}
+            className={`square ${playerCells.includes(index) ? 'clickable' : ''} 
+              ${index === player1TextCell && playerTurn === 0 ? 'active-player' : ''} 
+              ${index === player2TextCell && playerTurn === 1 ? 'active-player' : ''}`}
             onClick={() => playerCells.includes(index) && handleClick(index)}
           >
             <pre>{renderCell(cell, index)}</pre>
