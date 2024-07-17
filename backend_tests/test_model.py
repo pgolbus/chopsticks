@@ -1,7 +1,7 @@
 import pytest
 
-from backend.chopstick_model import ChopstickModel, Player
-
+from backend import Player
+from backend.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
 
 # TODO: I should probably not re-write the error msg multiple times
 
@@ -68,35 +68,35 @@ def test_move_from_zero():
     model = ChopstickModel()
     model.players[0].left = 0
     with pytest.raises(ValueError,
-                       match="Cannot move from / to an empty hand."):
+                       match=EMPTY_HAND_ERROR_MSG):
         model.move(0, "left", "left")
 
 def test_move_to_zero():
     model = ChopstickModel()
     model.players[0].left = 0
     with pytest.raises(ValueError,
-                       match="Cannot move from / to an empty hand."):
+                       match=EMPTY_HAND_ERROR_MSG):
         model.move(1, "left", "left")
 
 def test_swap_to_zero():
     model = ChopstickModel()
     model.players[0].left = 0
     with pytest.raises(ValueError,
-                       match="Cannot move from / to an empty hand."):
+                       match=EMPTY_HAND_ERROR_MSG):
         model.swap(0, "right", 1)
 
 def test_swap_from_zero():
     model = ChopstickModel()
     model.players[0].left = 0
     with pytest.raises(ValueError,
-                       match="Cannot move from / to an empty hand."):
+                       match=EMPTY_HAND_ERROR_MSG):
         model.swap(0, "left", 1)
 
 def test_swap_too_many():
     model = ChopstickModel()
     with pytest.raises(ValueError,
-                       match="Cannot swap all / more fingers than you have."):
+                       match=SWAP_ERROR_MSG):
         model.swap(0, "left", 1)
     with pytest.raises(ValueError,
-                       match="Cannot swap all / more fingers than you have."):
+                       match=SWAP_ERROR_MSG):
         model.swap(0, "left", 2)
