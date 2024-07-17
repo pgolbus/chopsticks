@@ -3,6 +3,9 @@ import pytest
 from backend.chopstick_model import ChopstickModel, Player
 
 
+# TODO: I should probably not re-write the error msg multiple times
+
+
 def test_init_board():
     model = ChopstickModel()
     assert model.players[0].left == 1
