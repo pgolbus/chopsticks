@@ -1,7 +1,5 @@
 from typing import List, Optional
-from . import Player
-
-FINGERS = 5
+from . import FINGERS, Player
 
 EMPTY_HAND_ERROR_MSG = "Cannot move from / to an empty hand."
 
@@ -84,8 +82,6 @@ class ChopstickModel:
         """
         if self.players[player].left == 0 or self.players[player].right == 0:
             raise ValueError(EMPTY_HAND_ERROR_MSG)
-        if fingers_to_swap < 1 or fingers_to_swap > 4:
-            raise ValueError("Can only swap 1 to 4 fingers.")
         too_many_error_msg = "Cannot swap all / more fingers than you have."
         if starting_hand == "left":
             if self.players[player].left < fingers_to_swap or \

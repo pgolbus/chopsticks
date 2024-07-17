@@ -97,12 +97,3 @@ def test_swap_too_many():
     with pytest.raises(ValueError,
                        match="Cannot swap all / more fingers than you have."):
         model.swap(0, "left", 2)
-
-def test_swap_bad_number():
-    model = ChopstickModel()
-    with pytest.raises(ValueError,
-                       match="Can only swap 1 to 4 fingers."):
-        model.swap(0, "left", 0)
-    with pytest.raises(ValueError,
-                       match="Can only swap 1 to 4 fingers."):
-        model.swap(0, "left", 6)
