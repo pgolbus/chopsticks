@@ -1,4 +1,5 @@
 from typing import List, Optional
+import logging
 from . import FINGERS, Player
 
 EMPTY_HAND_ERROR_MSG = "Cannot move from / to an empty hand."
@@ -12,7 +13,9 @@ class ChopstickModel:
         Initialize the ChopstickModel with two players,
         each having one chopstick in each hand.
         """
+        self.logger = logging.getLogger(__name__)
         self.players = [Player(1, 1), Player(1, 1)]
+        self.logger.info("Initialized ChopstickModel with two players.")
 
     def get_player_hands(self, player: int) -> Player:
         """
@@ -24,6 +27,7 @@ class ChopstickModel:
         Returns:
             Player: The player corresponding to the identifier.
         """
+        self.logger.debug(f"Retrieving hands for player {player}.")
         return self.players[player]
 
     def move(self, player: int, hand_from: str, hand_to: str) -> None:
@@ -41,28 +45,35 @@ class ChopstickModel:
         Raises:
             ValueError: If the hand_from or hand_to is empty.
         """
+        self.logger.info(f"Player {player} moving from {hand_from} to {hand_to}.")
         from_player = self.players[player]
         to_player = self.players[(player + 1) % 2]
 
         if hand_from == "left":
             if from_player.left == 0:
+                self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
             add = from_player.left
         else:
             if from_player.right == 0:
+                self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
             add = from_player.right
 
         if hand_to == "left":
             if to_player.left == 0:
+                self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
             to_player.left += add
             to_player.left %= FINGERS
         else:
             if to_player.right == 0:
+                self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
             to_player.right += add
             to_player.right %= FINGERS
+
+        self.logger.debug(f"Move completed: Player {player} ({hand_from}) to Player {(player + 1) % 2} ({hand_to}).")
 
     def swap(self, player: int, starting_hand: str, fingers_to_swap: int) -> None:
         """
@@ -80,12 +91,15 @@ class ChopstickModel:
                         not between 1 and 4, or if trying to swap more fingers
                         than available in the starting hand.
         """
+        self.logger.info(f"Player {player} swapping {fingers_to_swap} fingers from {starting_hand}.")
         if self.players[player].left == 0 or self.players[player].right == 0:
+            self.logger.error(EMPTY_HAND_ERROR_MSG)
             raise ValueError(EMPTY_HAND_ERROR_MSG)
         too_many_error_msg = "Cannot swap all / more fingers than you have."
         if starting_hand == "left":
             if self.players[player].left < fingers_to_swap or \
                self.players[player].left - fingers_to_swap < 1:
+                self.logger.error(too_many_error_msg)
                 raise ValueError(too_many_error_msg)
             self.players[player].left -= fingers_to_swap
             self.players[player].right += fingers_to_swap
@@ -93,7 +107,10 @@ class ChopstickModel:
         else:
             if self.players[player].right < fingers_to_swap or \
                self.players[player].right - fingers_to_swap < 1:
+                self.logger.error(too_many_error_msg)
                 raise ValueError(too_many_error_msg)
             self.players[player].left += fingers_to_swap
             self.players[player].right -= fingers_to_swap
             self.players[player].left %= FINGERS
+
+        self.logger.debug(f"Swap completed: Player {player} swapped {fingers_to_swap} fingers from {starting_hand}.")
