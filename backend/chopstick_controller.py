@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
-from . import FINGERS, Player
+
 from .chopstick_model import ChopstickModel
 
 OUT_OF_RANGE_ERROR_MSG = "Value must be an integer from 0 to 3 (inclusive)."

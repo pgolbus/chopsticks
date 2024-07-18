@@ -1,7 +1,10 @@
 import pytest
+import re
 
-from backend import Player
 from backend.chopstick_controller import ChopstickController
+from backend.chopstick_controller import INVALID_PLAYER_ERROR_MSG, \
+    OUT_OF_RANGE_ERROR_MSG, WRONG_PLAYER_ERROR_MSG
+from backend.chopstick_model import Player
 
 
 @pytest.fixture
@@ -63,20 +66,25 @@ def test_move(mock_model, mocker):
 
 def test_move_wrong_player():
     chopstick_controller = ChopstickController()
-    with pytest.raises(ValueError, match="It is player 1's turn."):
+    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="1")):
         chopstick_controller.move("1", "0", "2")
     chopstick_controller.move("0", "0", "2")
-    with pytest.raises(ValueError, match="It is player 2's turn."):
+    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="2")):
         chopstick_controller.move("0", "0", "2")
 
 def test_move_invalid_player():
-    assert True
-
-def test_move_out_of_bounds():
-    assert True
+    chopstick_controller = ChopstickController()
+    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
+        chopstick_controller.move("one", "0", "2")
+    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
+        chopstick_controller.move("3", "0", "2")
 
 def test_move_invalid_move():
-    assert True
+    chopstick_controller = ChopstickController()
+    with pytest.raises(ValueError, match=re.escape(OUT_OF_RANGE_ERROR_MSG)):
+        chopstick_controller.move("0", "zero", "2")
+    with pytest.raises(ValueError, match=re.escape(OUT_OF_RANGE_ERROR_MSG)):
+        chopstick_controller.move("0", "5", "2")
 
 ############################
 #

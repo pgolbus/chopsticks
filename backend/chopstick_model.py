@@ -1,6 +1,16 @@
-from typing import List, Optional
+from dataclasses import dataclass
 import logging
-from . import FINGERS, Player
+from typing import List, Optional
+
+
+FINGERS = 5
+
+
+@dataclass
+class Player:
+    left: int
+    right: int
+
 
 EMPTY_HAND_ERROR_MSG = "Cannot move from / to an empty hand."
 SWAP_ERROR_MSG = "Cannot swap all / more fingers than you have."
