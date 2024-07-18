@@ -62,7 +62,12 @@ def test_move(mock_model, mocker):
     assert chopstick_controller.current_player == 0
 
 def test_move_wrong_player():
-    assert True
+    chopstick_controller = ChopstickController()
+    with pytest.raises(ValueError, match="It is player 1's turn."):
+        chopstick_controller.move("1", "0", "2")
+    chopstick_controller.move("0", "0", "2")
+    with pytest.raises(ValueError, match="It is player 2's turn."):
+        chopstick_controller.move("0", "0", "2")
 
 def test_move_invalid_player():
     assert True

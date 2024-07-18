@@ -3,8 +3,6 @@ import pytest
 from backend import Player
 from backend.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
 
-# TODO: I should probably not re-write the error msg multiple times
-
 
 def test_init_board():
     model = ChopstickModel()

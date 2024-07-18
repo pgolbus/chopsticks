@@ -103,9 +103,10 @@ class ChopstickController:
             raise ValueError(INVALID_PLAYER_ERROR_MSG)
         if player not in (0, 1):
             raise ValueError(INVALID_PLAYER_ERROR_MSG)
-        if player != self.current_player:
+        if player != self.get_current_player():
+            display_player = self.get_current_player() + 1
             raise ValueError(WRONG_PLAYER_ERROR_MSG.format(
-                current_player=self.current_player
+                current_player=display_player
             ))
         try:
             move1 = int(move1)
