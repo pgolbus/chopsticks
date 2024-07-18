@@ -48,15 +48,18 @@ def test_get_winner(mocker):
 #  Move
 #
 ############################
-def test_move(mock_model):
-    assert True
-    # chopstick_controller = ChopstickController()
-    # chopstick_controller.move("0", "0", "2")
-    # mock_model.assert_has_calls(mock_model.call.move(0, "left", "left"))
-    # assert chopstick_controller.current_player == 1
-    # chopstick_controller.move("1", "3", "0")
-    # mock_model.assert_has_calls(mock_model.call.move(1, "right", "left"))
-    # assert chopstick_controller.current_player == 0
+def test_move(mock_model, mocker):
+    chopstick_controller = ChopstickController()
+    winner = chopstick_controller.move("0", "0", "2")
+    assert winner == -1
+    mock_model.assert_has_calls(mock_model.call.move(0, "left", "left"))
+    assert chopstick_controller.current_player == 1
+    chopstick_controller.get_winner = mocker.Mock()
+    chopstick_controller.get_winner.return_value = 1
+    winner = chopstick_controller.move("1", "3", "0")
+    assert winner == 1
+    mock_model.assert_has_calls(mock_model.call.move(1, "right", "left"))
+    assert chopstick_controller.current_player == 0
 
 def test_move_wrong_player():
     assert True
