@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
+import logging
 
 from .chopstick_model import ChopstickModel
 
@@ -20,14 +21,17 @@ class ChopstickController:
         Initialize the ChopstickController with a model instance,
         and set the current player to 0.
         """
+        self.logger = logging.getLogger(__name__)
         self.model = ChopstickModel()
         self.current_player = 0
+        self.logger.info("ChopstickController initialized with player 0 starting.")
 
     def change_player(self) -> None:
         """
         Change the current player to the next player.
         """
         self.current_player = (self.current_player + 1) % 2
+        self.logger.info(f"Changed current player to {self.current_player}.")
 
     def check_win(self) -> bool:
         """
@@ -41,23 +45,25 @@ class ChopstickController:
             bool: True if the current player has won, False otherwise.
         """
         player = self.model.get_player_hands(self.get_current_player())
-        if player.left + player.right == 0:
-            return True
-        return False
+        win = player.left + player.right == 0
+        self.logger.info(f"Checked win condition for player {self.current_player}: {'win' if win else 'no win'}.")
+        return win
 
     def get_winner(self) -> int:
         """
         Get the winner of the game.
 
         Returns:
-            int: The winner (0 or 1) or -1 if no one has won
+            int: The winner (0 or 1) or -1 if no one has won.
         """
         if self.check_win():
             self.change_player()
-            return self.get_current_player()
+            winner = self.get_current_player()
+            self.logger.info(f"Player {winner} has won the game.")
+            return winner
+        self.logger.info("No player has won yet.")
         return -1
 
-    # @app.route("/get_current_player")
     def get_current_player(self) -> int:
         """
         Get the current player.
@@ -81,14 +87,15 @@ class ChopstickController:
         try:
             player = int(player)
         except ValueError:
+            self.logger.error(INVALID_PLAYER_ERROR_MSG)
             raise ValueError(INVALID_PLAYER_ERROR_MSG)
         if player not in (0, 1):
+            self.logger.error(INVALID_PLAYER_ERROR_MSG)
             raise ValueError(INVALID_PLAYER_ERROR_MSG)
         if player != self.get_current_player():
             display_player = self.get_current_player() + 1
-            raise ValueError(WRONG_PLAYER_ERROR_MSG.format(
-                current_player=display_player
-            ))
+            self.logger.error(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
+            raise ValueError(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
 
     def validate_hand(self, hand: str) -> None:
         """
@@ -101,9 +108,9 @@ class ChopstickController:
             ValueError: If hand is not "left" or "right".
         """
         if hand not in ("left", "right"):
+            self.logger.error(INVALID_HAND_ERROR_MSG)
             raise ValueError(INVALID_HAND_ERROR_MSG)
 
-    # @app.route("/get_move/<move1>/<move2>")
     def move(self, player: str, from_hand: str, to_hand: str) -> int:
         """
         Execute a move in the game and check if the move results in a win.
@@ -120,16 +127,32 @@ class ChopstickController:
             ValueError: If player is not "0" or "1".
             ValueError: If from_hand or to_hand are not "left" or "right".
         """
+        self.logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
         self.validate_player(player)
-        if from_hand not in ("left", "right") or to_hand not in ("left", "right"):
-            raise ValueError(INVALID_HAND_ERROR_MSG)
+        self.validate_hand(from_hand)
+        self.validate_hand(to_hand)
         self.model.move(self.get_current_player(), from_hand, to_hand)
         self.change_player()
-        return self.get_winner()
+        winner = self.get_winner()
+        self.logger.info(f"Move completed. Current winner: {winner if winner != -1 else 'none'}.")
+        return winner
 
-    #@app.route("/swap/<player>/<hand>/<fingers>")
     def swap(self, player: str, hand: str, fingers: str) -> None:
+        """
+        Execute a swap of fingers between hands.
+
+        Args:
+            player (str): The player making the swap (should be "0" or "1").
+            hand (str): The hand to swap from (should be "left" or "right").
+            fingers (str): The number of fingers to swap (should be a string representing an integer).
+
+        Raises:
+            ValueError: If player is not "0" or "1".
+            ValueError: If hand is not "left" or "right".
+        """
+        self.logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
         self.validate_player(player)
         self.validate_hand(hand)
         self.model.swap(player, hand, fingers)
         self.change_player()
+        self.logger.info(f"Swap completed for player {player}.")
