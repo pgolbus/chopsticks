@@ -1,6 +1,7 @@
 import pytest
 
-from backend.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG, Player
+from backend import Player
+from backend.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
 
 
 def test_init_board():

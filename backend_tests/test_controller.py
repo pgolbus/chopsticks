@@ -3,7 +3,7 @@ import re
 
 from backend.chopstick_controller import ChopstickController
 from backend.chopstick_controller import INVALID_PLAYER_ERROR_MSG, \
-    OUT_OF_RANGE_ERROR_MSG, WRONG_PLAYER_ERROR_MSG
+    WRONG_PLAYER_ERROR_MSG
 from backend.chopstick_model import Player
 
 
@@ -46,64 +46,43 @@ def test_get_winner(mocker):
     assert chopstick_controller.get_winner() == 0
     assert chopstick_controller.get_winner() == -1
 
-############################
-#
-#  Move
-#
-############################
+def test_valid_player():
+    chopstick_controller = ChopstickController()
+    chopstick_controller.validate_player("0")
+    chopstick_controller.change_player()
+    chopstick_controller.validate_player("1")
+
+def test_move_wrong_player():
+    chopstick_controller = ChopstickController()
+    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="1")):
+        chopstick_controller.validate_player("1")
+    chopstick_controller.change_player()
+    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="2")):
+        chopstick_controller.validate_player("0")
+
+def test_move_invalid_player():
+    chopstick_controller = ChopstickController()
+    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
+        chopstick_controller.validate_player("one")
+    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
+        chopstick_controller.validate_player("3")
+
 def test_move(mock_model, mocker):
     chopstick_controller = ChopstickController()
-    winner = chopstick_controller.move("0", "0", "2")
+    winner = chopstick_controller.move("0", "left", "left")
     assert winner == -1
     mock_model.assert_has_calls(mock_model.call.move(0, "left", "left"))
     assert chopstick_controller.current_player == 1
     chopstick_controller.get_winner = mocker.Mock()
     chopstick_controller.get_winner.return_value = 1
-    winner = chopstick_controller.move("1", "3", "0")
+    winner = chopstick_controller.move("1", "right", "left")
     assert winner == 1
     mock_model.assert_has_calls(mock_model.call.move(1, "right", "left"))
     assert chopstick_controller.current_player == 0
 
-def test_move_wrong_player():
-    chopstick_controller = ChopstickController()
-    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="1")):
-        chopstick_controller.move("1", "0", "2")
-    chopstick_controller.move("0", "0", "2")
-    with pytest.raises(ValueError, match=WRONG_PLAYER_ERROR_MSG.format(current_player="2")):
-        chopstick_controller.move("0", "0", "2")
-
-def test_move_invalid_player():
-    chopstick_controller = ChopstickController()
-    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
-        chopstick_controller.move("one", "0", "2")
-    with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
-        chopstick_controller.move("3", "0", "2")
-
-def test_move_invalid_move():
-    chopstick_controller = ChopstickController()
-    with pytest.raises(ValueError, match=re.escape(OUT_OF_RANGE_ERROR_MSG)):
-        chopstick_controller.move("0", "zero", "2")
-    with pytest.raises(ValueError, match=re.escape(OUT_OF_RANGE_ERROR_MSG)):
-        chopstick_controller.move("0", "5", "2")
-
-############################
-#
-#  Swap
-#
-############################
 def test_swap(mock_model):
-    # chopstick_controller = ChopstickController()
-    # chopstick_controller.swap("0", "2")
-    assert True
-
-def test_swap_wrong_player():
-    assert True
-
-def test_swap_invalid_player():
-    assert True
-
-def test_swap_out_of_bounds():
-    assert True
-
-def test_swap_invalid_swap():
-    assert True
+    chopstick_controller = ChopstickController()
+    chopstick_controller.swap("0", "left", "2")
+    mock_model.assert_has_calls(mock_model.call.swap(0, "left", 2))
+    chopstick_controller.swap("1", "left", "2")
+    mock_model.assert_has_calls(mock_model.call.swap(1, "left", 2))

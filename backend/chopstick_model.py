@@ -1,15 +1,9 @@
-from dataclasses import dataclass
 import logging
 from typing import List, Optional
 
+from . import Player
 
 FINGERS = 5
-
-
-@dataclass
-class Player:
-    left: int
-    right: int
 
 
 EMPTY_HAND_ERROR_MSG = "Cannot move from / to an empty hand."
