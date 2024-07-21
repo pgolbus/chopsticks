@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from typing import List
 import logging
 
 from .chopstick_model import ChopstickModel
@@ -136,15 +134,17 @@ class ChopstickController:
             ValueError: If player is not "0" or "1".
             ValueError: If from_hand or to_hand are not "left" or "right".
         """
-        self.logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
-        self.validate_player(player)
-        self.validate_hand(from_hand)
-        self.validate_hand(to_hand)
-        self.model.move(self.get_current_player(False), from_hand, to_hand)
-        self.change_player()
-        winner = self.get_winner()
-        self.logger.info(f"Move completed. Current winner: {winner if winner != -1 else 'none'}.")
-        return winner
+        try:
+            self.logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
+            self.validate_player(player)
+            self.validate_hand(from_hand)
+            self.validate_hand(to_hand)
+            self.model.move(self.get_current_player(False), from_hand, to_hand)
+            self.logger.info(f"Move completed")
+            return self.end_move()
+        except ValueError as e:
+            self.logger.error(e)
+            self.view.error(str(e))
 
     def swap(self, player: str, hand: str, fingers: str) -> None:
         """
@@ -159,9 +159,26 @@ class ChopstickController:
             ValueError: If player is not "0" or "1".
             ValueError: If hand is not "left" or "right".
         """
-        self.logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
-        self.validate_player(player)
-        self.validate_hand(hand)
-        self.model.swap(player, hand, fingers)
+        try:
+            self.logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
+            self.validate_player(player)
+            self.validate_hand(hand)
+            self.model.swap(player, hand, fingers)
+            self.logger.info(f"Swap completed for player {player}.")
+            return self.end_move()
+        except ValueError as e:
+            self.logger.error(e)
+            self.view.error(str(e))
+
+    def end_move(self) -> Flask.Response:
+        """
+        Get the result of the last move and display it using the view.
+
+        Returns:
+            Flask.Response: The response object containing the move result.
+        """
         self.change_player()
-        self.logger.info(f"Swap completed for player {player}.")
+        winner = self.get_winner()
+        player1 = self.model.get_player_hands(0)
+        player2 = self.model.get_player_hands(1)
+        return self.view.move_result(player1, player2, winner)
