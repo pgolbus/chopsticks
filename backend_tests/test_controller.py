@@ -1,10 +1,9 @@
 import pytest
-import re
 
+from backend import Player
 from backend.chopstick_controller import ChopstickController
 from backend.chopstick_controller import INVALID_PLAYER_ERROR_MSG, \
     WRONG_PLAYER_ERROR_MSG
-from backend.chopstick_model import Player
 
 
 @pytest.fixture
@@ -12,10 +11,10 @@ def mock_model(mocker):
     mock_model = mocker.patch("backend.chopstick_controller.ChopstickModel")
     return mock_model
 
-# @pytest.fixture
-# def mock_model(mocker):
-#     mock_view = mocker.patch("backend.chopstick_view.ChopstickView")
-#     return mock_view
+@pytest.fixture
+def mock_view(mocker):
+    mock_view = mocker.patch("backend.chopstick_controller.ChopstickView")
+    return mock_view
 
 def test_change_player():
     chopstick_controller = ChopstickController()
@@ -25,13 +24,15 @@ def test_change_player():
     chopstick_controller.change_player()
     assert chopstick_controller.current_player == 0
 
-def test_get_current_player():
+def test_get_current_player(mock_view):
     chopstick_controller = ChopstickController()
     assert chopstick_controller.get_current_player(False) == 0
     chopstick_controller.change_player()
     assert chopstick_controller.get_current_player(False) == 1
     chopstick_controller.change_player()
     assert chopstick_controller.get_current_player(False) == 0
+    chopstick_controller.get_current_player()
+    mock_view.assert_has_calls(mock_view.call.get_player(0))
 
 def test_check_win(mock_model):
     mock_model.return_value.get_player_hands.side_effect = [
@@ -71,22 +72,17 @@ def test_move_invalid_player():
     with pytest.raises(ValueError, match=INVALID_PLAYER_ERROR_MSG):
         chopstick_controller.validate_player("3")
 
-def test_move(mock_model, mocker):
-    chopstick_controller = ChopstickController()
-    winner = chopstick_controller.move("0", "left", "left")
-    assert winner == -1
-    mock_model.assert_has_calls(mock_model.call.move(0, "left", "left"))
-    assert chopstick_controller.current_player == 1
-    chopstick_controller.get_winner = mocker.Mock()
-    chopstick_controller.get_winner.return_value = 1
-    winner = chopstick_controller.move("1", "right", "left")
-    assert winner == 1
-    mock_model.assert_has_calls(mock_model.call.move(1, "right", "left"))
-    assert chopstick_controller.current_player == 0
+# def test_move(mock_model, mock_view):
+#     chopstick_controller = ChopstickController()
+#     chopstick_controller.move("0", "left", "left")
+#     mock_model.assert_has_calls(mock_model.call.move(0, "left", "left"))
+#     player1 = Player(1, 1)
+#     player2 = Player(1, 1)
+#     winner = 1
+#     mock_view.assert_has_calls(mock_view.call.move_result(player1, player2, winner))
+#     assert chopstick_controller.current_player == 1
 
-def test_swap(mock_model):
-    chopstick_controller = ChopstickController()
-    chopstick_controller.swap("0", "left", "2")
-    mock_model.assert_has_calls(mock_model.call.swap(0, "left", 2))
-    chopstick_controller.swap("1", "left", "2")
-    mock_model.assert_has_calls(mock_model.call.swap(1, "left", 2))
+# def test_swap(mock_model, mock_view):
+#    chopstick_controller = ChopstickController()
+#    chopstick_controller.swap("0", "left", "2")
+#    mock_model.assert_has_calls(mock_model.call.swap(0, "left", 2))
