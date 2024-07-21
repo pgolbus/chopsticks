@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 import logging
 
 from .chopstick_model import ChopstickModel
-# from .chopstick_view import ChopstickView
+from .chopstick_view import ChopstickView
 
 INVALID_HAND_ERROR_MSG = "Hand must be 'left' or 'right'"
 INVALID_PLAYER_ERROR_MSG = "Player must be an integer, either 0 or 1."
@@ -14,16 +14,18 @@ class ChopstickController:
     Controller for the Chopstick game, managing game state and player actions.
     """
 
-    model: Optional[ChopstickModel]
-    current_player: Optional[int]
+    model: ChopstickModel
+    view: ChopstickView
+    current_player: int
 
     def __init__(self) -> None:
         """
-        Initialize the ChopstickController with a model instance,
+        Initialize the ChopstickController with a model and view instance,
         and set the current player to 0.
         """
         self.logger = logging.getLogger(__name__)
         self.model = ChopstickModel()
+        self.view = ChopstickView()
         self.current_player = 0
         self.logger.info("ChopstickController initialized with player 0 starting.")
 
@@ -45,7 +47,7 @@ class ChopstickController:
         Returns:
             bool: True if the current player has won, False otherwise.
         """
-        player = self.model.get_player_hands(self.get_current_player())
+        player = self.model.get_player_hands(self.get_current_player(False))
         win = player.left + player.right == 0
         self.logger.info(f"Checked win condition for player {self.current_player}: {'win' if win else 'no win'}.")
         return win
@@ -59,19 +61,25 @@ class ChopstickController:
         """
         if self.check_win():
             self.change_player()
-            winner = self.get_current_player()
+            winner = self.get_current_player(False)
             self.logger.info(f"Player {winner} has won the game.")
             return winner
         self.logger.info("No player has won yet.")
         return -1
 
-    def get_current_player(self) -> int:
+    def get_current_player(self, response=True) -> int:
         """
         Get the current player.
 
+        Args:
+            response (bool, optional): If True, get the current player from the view. Defaults to True.
+
         Returns:
-            int: The current player (0 or 1).
+            int: The current player (0 or 1), or
+            Flask response object if response is True.
         """
+        if response:
+            return self.view.get_player()
         return self.current_player
 
     def validate_player(self, player: str) -> None:
@@ -93,8 +101,8 @@ class ChopstickController:
         if player not in (0, 1):
             self.logger.error(INVALID_PLAYER_ERROR_MSG)
             raise ValueError(INVALID_PLAYER_ERROR_MSG)
-        if player != self.get_current_player():
-            display_player = self.get_current_player() + 1
+        if player != self.get_current_player(False):
+            display_player = self.get_current_player(False) + 1
             self.logger.error(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
             raise ValueError(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
 
@@ -132,7 +140,7 @@ class ChopstickController:
         self.validate_player(player)
         self.validate_hand(from_hand)
         self.validate_hand(to_hand)
-        self.model.move(self.get_current_player(), from_hand, to_hand)
+        self.model.move(self.get_current_player(False), from_hand, to_hand)
         self.change_player()
         winner = self.get_winner()
         self.logger.info(f"Move completed. Current winner: {winner if winner != -1 else 'none'}.")

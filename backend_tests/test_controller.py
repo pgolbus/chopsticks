@@ -27,11 +27,11 @@ def test_change_player():
 
 def test_get_current_player():
     chopstick_controller = ChopstickController()
-    assert chopstick_controller.get_current_player() == 0
+    assert chopstick_controller.get_current_player(False) == 0
     chopstick_controller.change_player()
-    assert chopstick_controller.get_current_player() == 1
+    assert chopstick_controller.get_current_player(False) == 1
     chopstick_controller.change_player()
-    assert chopstick_controller.get_current_player() == 0
+    assert chopstick_controller.get_current_player(False) == 0
 
 def test_check_win(mock_model):
     mock_model.return_value.get_player_hands.side_effect = [
