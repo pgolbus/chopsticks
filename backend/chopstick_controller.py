@@ -1,5 +1,7 @@
 import logging
 
+import flask
+
 from .chopstick_model import ChopstickModel
 from .chopstick_view import ChopstickView
 
@@ -77,7 +79,7 @@ class ChopstickController:
             Flask response object if response is True.
         """
         if response:
-            return self.view.get_player()
+            return self.view.get_player(self.current_player)
         return self.current_player
 
     def validate_player(self, player: str) -> None:
@@ -170,12 +172,12 @@ class ChopstickController:
             self.logger.error(e)
             self.view.error(str(e))
 
-    def end_move(self) -> Flask.Response:
+    def end_move(self) -> flask.Response:
         """
         Get the result of the last move and display it using the view.
 
         Returns:
-            Flask.Response: The response object containing the move result.
+            flask.Response: The response object containing the move result.
         """
         self.change_player()
         winner = self.get_winner()
