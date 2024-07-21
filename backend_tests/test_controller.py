@@ -12,6 +12,10 @@ def mock_model(mocker):
     mock_model = mocker.patch("backend.chopstick_controller.ChopstickModel")
     return mock_model
 
+# @pytest.fixture
+# def mock_model(mocker):
+#     mock_view = mocker.patch("backend.chopstick_view.ChopstickView")
+#     return mock_view
 
 def test_change_player():
     chopstick_controller = ChopstickController()

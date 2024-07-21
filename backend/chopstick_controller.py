@@ -3,6 +3,7 @@ from typing import List, Optional
 import logging
 
 from .chopstick_model import ChopstickModel
+# from .chopstick_view import ChopstickView
 
 INVALID_HAND_ERROR_MSG = "Hand must be 'left' or 'right'"
 INVALID_PLAYER_ERROR_MSG = "Player must be an integer, either 0 or 1."
