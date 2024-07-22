@@ -1,5 +1,4 @@
 import logging
-from typing import Any, Dict
 
 from flask import make_response, jsonify
 

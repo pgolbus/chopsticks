@@ -20,7 +20,24 @@ class ChopstickModel:
         """
         self.logger = logging.getLogger(__name__)
         self.players = [Player(1, 1), Player(1, 1)]
+        self.current_player = 0
         self.logger.info("Initialized ChopstickModel with two players.")
+
+    def get_current_player(self) -> int:
+        """
+        Retrieve the current player.
+
+        Returns:
+            int: The index of the current player (0 or 1).
+        """
+        return self.current_player
+
+    def change_player(self) -> None:
+        """
+        Change the current player to the other player.
+        """
+        self.current_player = (self.current_player + 1) % 2
+        self.logger.info(f"Changed current player to {self.current_player}.")
 
     def get_player_hands(self, player: int) -> Player:
         """
