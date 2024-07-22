@@ -1,10 +1,12 @@
 from flask import Flask, Response
+from flask_cors import CORS
 
 from backend import configure_logger
 from backend.chopstick_controller import get_current_player, move, swap
 
 
 app = Flask(__name__)
+CORS(app)
 
 
 configure_logger()
@@ -23,4 +25,4 @@ def make_swap(player: str, hand: str, fingers: str) -> Response:
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
