@@ -7,6 +7,7 @@ const URL = 'http://172.21.113.211:5000/chopsticks';
 
 const App = () => {
   const initialBoard = Array(9).fill('');
+  // this could be better...
   const player1cells = [0, 6];
   const player2cells = [2, 8];
   const hands = {
@@ -30,6 +31,9 @@ const App = () => {
       .then(response => {
         console.log("Board state response:", response.data);
         let boardUpdate = response.data;
+        if (boardUpdate.winner !== -1) {
+          window.alert(`Player ${boardUpdate.winner + 1} wins!`, handleReset());
+        }
         let newBoard = Array(9).fill('');
         newBoard[0] = boardUpdate.player1_left;
         newBoard[2] = boardUpdate.player2_left;
@@ -41,7 +45,7 @@ const App = () => {
       .catch(error => {
         console.error('Error fetching board state:', error);
       });
-  }, []);
+  }, [URL, handleReset]);
 
   useEffect(() => {
     updateBoard(); // Fetch initial board state on mount
@@ -107,6 +111,7 @@ const App = () => {
         window.alert('You must pick a different hand');
         return;
       }
+      console.log("firstClick:", firstClick, "index:", index);
       if ((player1cells.includes(firstClick) && player1cells.includes(index)) ||
           (player2cells.includes(firstClick) && player2cells.includes(index))) {
         let toSwap = window.prompt('How many would you like to swap?');
@@ -130,11 +135,12 @@ const App = () => {
             console.error('Error fetching data:', error);
           });
       }
+      setFirstClick(null);
     }
   }
 
   const handleReset = () => {
-    axios.get(`${URL}/chopsticks/reset`)
+    axios.get(`${URL}/reset`)
       .then(response => {
         console.log('Game reset successfully:', response.data);
         updatePlayer();
