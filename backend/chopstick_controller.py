@@ -40,13 +40,19 @@ def get_winner() -> int:
     Returns:
         int: The winner (0 or 1) or -1 if no one has won.
     """
+    return MODEL.get_winner()
+
+def set_winner() -> None:
+    """
+    Inform the model of the current winner of the game
+    """
     if check_win():
         change_player()
         winner = MODEL.get_current_player()
         logger.info(f"Player {winner} has won the game.")
-        return winner
-    logger.info("No player has won yet.")
-    return -1
+        MODEL.set_winner(winner)
+    else:
+        logger.info("No player has won yet.")
 
 def get_current_player() -> Response:
     """
@@ -171,15 +177,12 @@ def swap(player: str, hand: str, fingers: str) -> Response:
         logger.error(e)
         return VIEW.error(str(e))
 
-def end_move() -> Response:
+def end_move() -> None:
     """
-    Get the result of the last move and display it using the view.
-
-    Returns:
-        Response: The Flask response object containing the move result.
+    Change players and check for a winner
     """
     change_player()
-    MODEL.set_winner(get_winner())
+    set_winner()
 
 def board_state() -> Response:
     """

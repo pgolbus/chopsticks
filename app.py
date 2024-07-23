@@ -11,6 +11,10 @@ CORS(app)
 
 configure_logger()
 
+@app.route("/chopsticks/get_board_state", methods=["GET"])
+def board_state() -> Response:
+    return board_state()
+
 @app.route("/chopsticks/get_current_player", methods=["GET"])
 def current_player() -> Response:
     return get_current_player()
