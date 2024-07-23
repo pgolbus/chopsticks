@@ -78,7 +78,7 @@ function App() {
   const handleClick = (index) => {
     let newBoard = [...board];
 
-    /*if (firstClick === null) {
+    if (firstClick === null) {
       // First click
       if (newBoard[index] === 0) {
         window.alert('Cannot start with a hand with no fingers');
@@ -111,7 +111,7 @@ function App() {
         newBoard = swap(index, newBoard);
       } else {
         // window.alert(`First Click: ${firstClick}, Second Click: ${index}`);
-        /* let current = newBoard[index];
+        let current = newBoard[index];
         let newValue = (current + 1) % fingers;
         newBoard[index] = newValue;
 
@@ -127,7 +127,7 @@ function App() {
         return;
       }
       flip();
-    }*/
+    }
   };
 
   return (

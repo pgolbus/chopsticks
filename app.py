@@ -2,7 +2,7 @@ from flask import Flask, Response
 from flask_cors import CORS
 
 from backend import configure_logger
-from backend.chopstick_controller import get_current_player, move, swap
+from backend.chopstick_controller import get_current_player, get_player_hand, move, swap
 
 
 app = Flask(__name__)
@@ -14,6 +14,10 @@ configure_logger()
 @app.route("/chopsticks/get_current_player", methods=["GET"])
 def current_player() -> Response:
     return get_current_player()
+
+@app.route("/chopsticks/get_player_hand/<player>/<hand>", methods=["GET"])
+def player_hand(player: str, hand: str) -> Response:
+    return get_player_hand(player, hand)
 
 @app.route('/chopsticks/move/<player>/<from_hand>/<to_hand>', methods=['GET'])
 def make_move(player: str, from_hand: str, to_hand: str) -> Response:

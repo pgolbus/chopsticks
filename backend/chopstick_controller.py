@@ -58,6 +58,26 @@ def get_current_player() -> Response:
     current_player = MODEL.get_current_player()
     return VIEW.get_player(current_player)
 
+def get_player_hand(player: str, hand: str) -> Response:
+    """
+    Get the value of a specific hand for a player.
+
+    Args:
+        player (str): The index of the player in the array of players.
+        hand (str): The hand to get the value of.
+
+    Returns:
+        Response: Flask response object containing the value of the hand.
+    """
+    try:
+        player = int(player)
+    except ValueError:
+        e = ValueError(INVALID_PLAYER_ERROR_MSG)
+        logger.error(e)
+        return VIEW.error(str(e))
+    player_obj = MODEL.get_player_hands(player)
+    return VIEW.get_hand(player_obj, hand)
+
 def validate_player(player: str) -> None:
     """
     Validate the player.
@@ -159,7 +179,16 @@ def end_move() -> Response:
         Response: The Flask response object containing the move result.
     """
     change_player()
-    winner = get_winner()
+    MODEL.set_winner(get_winner())
+
+def board_state() -> Response:
+    """
+    Get the current state of the board and display it using the view.
+
+    Returns:
+        Response: The Flask response object containing the board state.
+    """
     player1 = MODEL.get_player_hands(0)
     player2 = MODEL.get_player_hands(1)
-    return VIEW.move_result(player1, player2, winner)
+    winner = MODEL.get_winner()
+    return VIEW.board_state(player1, player2, winner)
