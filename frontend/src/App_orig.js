@@ -19,16 +19,9 @@ function App() {
   const [playerTurn, setPlayerTurn] = useState(0);
 
    // Change between player 1 and player 2
-  const getCurrentPlayer = async () => {
-    try {
-      const response = await axios.get('http://172.18.4.181:5000/chopsticks/get_current_player');
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }
-
-  getCurrentPlayer()
+   const flip = () => {
+    setPlayerTurn(playerTurn === 0 ? 1 : 0);
+  };
 
   const win = (newBoard) => {
     console.log(newBoard);
@@ -111,9 +104,9 @@ function App() {
         newBoard = swap(index, newBoard);
       } else {
         // window.alert(`First Click: ${firstClick}, Second Click: ${index}`);
-        let current = newBoard[index];
+        /*let current = newBoard[index];
         let newValue = (current + 1) % fingers;
-        newBoard[index] = newValue;
+        newBoard[index] = newValue;*/
 
         let current = newBoard[firstClick];
         let newValue = (current + newBoard[index]) % fingers;

@@ -19,6 +19,12 @@ class ChopstickModel:
         each having one chopstick in each hand.
         """
         self.logger = logging.getLogger(__name__)
+        self.init_game()
+
+    def init_game(self) -> None:
+        """
+        Initialize the game.
+        """
         self.players = [Player(1, 1), Player(1, 1)]
         self.current_player = 0
         self.winner = -1

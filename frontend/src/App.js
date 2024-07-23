@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import handStates from './handStates';
@@ -6,7 +6,6 @@ import handStates from './handStates';
 const URL = 'http://172.21.113.211:5000/chopsticks';
 
 const App = () => {
-  const fingers = 5;
   const initialBoard = Array(9).fill('');
   const player1cells = [0, 6];
   const player2cells = [2, 8];
@@ -15,18 +14,42 @@ const App = () => {
     2: "left",
     6: "right",
     8: "right"
-  }
+  };
   const playerCells = [...player1cells, ...player2cells];
   const player1TextCell = 3;
   const player1Text = "Player 1";
   const player2TextCell = 5;
   const player2Text = "Player 2";
-  playerCells.forEach(index => initialBoard[index] = 1);
   const [board, setBoard] = useState(initialBoard);
   const [firstClick, setFirstClick] = useState(null);
-  const [currentPlayer, setCurrentPlayer] = useState(null);
-  const [moveResult, setMoveResult] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(0);
+
+  const updateBoard = useCallback(() => {
+    console.log("updateBoard called");
+    axios.get(`${URL}/get_board_state`)
+      .then(response => {
+        console.log("Board state response:", response.data);
+        let boardUpdate = response.data;
+        let newBoard = Array(9).fill('');
+        newBoard[0] = boardUpdate.player1_left;
+        newBoard[2] = boardUpdate.player2_left;
+        newBoard[6] = boardUpdate.player1_right;
+        newBoard[8] = boardUpdate.player2_right;
+        console.log("New board state before setBoard:", newBoard);
+        setBoard(newBoard);
+      })
+      .catch(error => {
+        console.error('Error fetching board state:', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    updateBoard(); // Fetch initial board state on mount
+  }, [updateBoard]); // Dependency array with updateBoard
+
+  useEffect(() => {
+    console.log("Board state changed:", board);
+  }, [board]);
 
   const renderCell = (cell, index) => {
     if (playerCells.includes(index)) {
@@ -38,66 +61,89 @@ const App = () => {
     }
   };
 
-  const updateBoard = (boardUpdate) => {
-    let newBoard = [...board];
-    newBoard[0] = boardUpdate.player1left;
-    newBoard[2] = boardUpdate.player2left;
-    newBoard[6] = boardUpdate.player1right;
-    newBoard[8] = boardUpdate.player2right;
-    setBoard(newBoard);
+  const updatePlayer = () => {
+    axios.get(`${URL}/get_current_player`)
+      .then(response => {
+        setPlayerTurn(response.data.player);
+      })
+      .catch(error => {
+        console.error('Error fetching current player:', error);
+      });
+  };
+
+  const firstClickSetter = (index, player, hand) => {
+    axios.get(`${URL}/get_player_hand/${player}/${hand}`)
+      .then(response => {
+        console.log("Player hand response:", response.data);
+        let fingers = response.data.hand;
+        if (fingers === 0) {
+          window.alert('Cannot add fingers to an empty hand');
+          throw new Error('Cannot add fingers to an empty hand');
+        }
+        setFirstClick(index);
+      })
+      .catch(error => {
+        if (error.message !== 'Cannot add fingers to an empty hand') {
+          console.error('Error fetching data:', error);
+        }
+      });
   };
 
   const handleClick = (index) => {
+    console.log("handleClick called with index:", index);
     if (firstClick === null) {
-      axios.get(`${URL}/get_current_player`)
-        .then(response => {
-          let playerTurn = response.data.player;
-          if (
-               (playerTurn === 0 && !player1cells.includes(index)) ||
-               (playerTurn === 1 && !player2cells.includes(index))
-             )
-          {
-            window.alert('You must start with one of your own hands');
-            throw new Error('Invalid starting hand');
-          }
-          setPlayerTurn(playerTurn);
-        }).then(() => {
-          if (player1cells.includes(index)) {
-            return axios.get(`${URL}/get_player_hand/0/${hands[index]}`)
-          }
-          return axios.get(`${URL}/get_player_hand/1/${hands[index]}`)
-        }).then(response => {
-            let fingers = response.data.hand;
-            if (fingers === 0) {
-              window.alert('Cannot add fingers to an empty hand');
-              throw new Error('Cannot add fingers to an empty hand');
-            }
-
-          setFirstClick(index);
-        })
-        .catch(error => {
-          if (error.message !== 'Invalid starting hand' && error.message !== 'Cannot add fingers to an empty hand') {
-            console.error('Error fetching data:', error);
-          }
-        });
+      updatePlayer()
+      if (
+            (playerTurn === 0 && !player1cells.includes(index)) ||
+            (playerTurn === 1 && !player2cells.includes(index))
+          )
+      {
+        window.alert('You must start with one of your own hands');
+        throw new Error('Invalid starting hand');
+      }
+      firstClickSetter(index, playerTurn, hands[index]);
     } else {
       if (index === firstClick) {
         window.alert('You must pick a different hand');
         return;
       }
-      if ((player1cells.includes(firstClick) && player1cells.includes(index) ||
-          (player2cells.includes(firstClick) && player2cells.includes(index)))) {
+      if ((player1cells.includes(firstClick) && player1cells.includes(index)) ||
+          (player2cells.includes(firstClick) && player2cells.includes(index))) {
         let toSwap = window.prompt('How many would you like to swap?');
-        axios.get(`${URL}/swap/${currentPlayer}/${hands[firstClick]}/${toSwap}`)
+        axios.get(`${URL}/swap/${playerTurn}/${hands[firstClick]}/${toSwap}`)
         .then(response => {
-          updateBoard(response.data);
+          console.log("Swap response:", response.data);
+          updatePlayer();
+          updateBoard();
         })
         .catch(error => {
           console.error('Error fetching data:', error);
         });
+      } else {
+        axios.get(`${URL}/move/${playerTurn}/${hands[firstClick]}/${hands[index]}`)
+          .then(response => {
+            console.log("Move response:", response.data);
+            updatePlayer();
+            updateBoard();
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
       }
     }
   }
+
+  const handleReset = () => {
+    axios.get(`${URL}/chopsticks/reset`)
+      .then(response => {
+        console.log('Game reset successfully:', response.data);
+        updatePlayer();
+        updateBoard();
+      })
+      .catch(error => {
+        console.error('Failed to reset game:', error);
+      });
+  };
 
   return (
     <div className="App">
@@ -115,6 +161,12 @@ const App = () => {
           </div>
         ))}
       </div>
+      <button
+        className="reset-button"
+        onClick={handleReset}
+      >
+        Reset
+      </button>
     </div>
   );
 };

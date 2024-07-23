@@ -38,3 +38,7 @@
   background-color: #f0f0f0;
   font-size: 18px; /* Slightly bigger font size */
 }
+
+.reset-button {
+  margin-top: 20px; /* Adds space between the board and the button */
+}

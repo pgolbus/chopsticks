@@ -14,6 +14,14 @@ VIEW = ChopstickView()
 
 logger = logging.getLogger(__name__)
 
+# TODO: Test me
+def init_game() -> None:
+    """
+    Initialize the game.
+    """
+    MODEL.init_game()
+    logger.info("Initialized game.")
+
 def change_player() -> None:
     """
     Change the current player to the next player.
@@ -107,6 +115,7 @@ def validate_player(player: str) -> None:
         display_player = MODEL.get_current_player() + 1
         logger.error(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
         raise ValueError(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
+    return player
 
 def validate_hand(hand: str) -> None:
     """
@@ -140,12 +149,12 @@ def move(player: str, from_hand: str, to_hand: str) -> Response:
     """
     try:
         logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
-        validate_player(player)
+        player = validate_player(player)
         validate_hand(from_hand)
         validate_hand(to_hand)
         MODEL.move(MODEL.get_current_player(), from_hand, to_hand)
         logger.info(f"Move completed.")
-        return end_move()
+        end_move()
     except ValueError as e:
         logger.error(e)
         return VIEW.error(str(e))
@@ -166,13 +175,23 @@ def swap(player: str, hand: str, fingers: str) -> Response:
         ValueError: If player is not "0" or "1".
         ValueError: If hand is not "left" or "right".
     """
+    logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
     try:
-        logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
-        validate_player(player)
+        player = validate_player(player)
         validate_hand(hand)
+    except ValueError as e:
+        logger.error(e)
+        return VIEW.error(str(e))
+    try:
+        fingers = int(fingers)
+    except ValueError:
+        e = ValueError("Fingers must be an integer")
+        logger.error(e)
+        return VIEW.error(str(e))
+    try:
         MODEL.swap(player, hand, fingers)
         logger.info(f"Swap completed for player {player}.")
-        return end_move()
+        end_move()
     except ValueError as e:
         logger.error(e)
         return VIEW.error(str(e))
@@ -184,7 +203,7 @@ def end_move() -> None:
     change_player()
     set_winner()
 
-def board_state() -> Response:
+def get_board_state() -> Response:
     """
     Get the current state of the board and display it using the view.
 
