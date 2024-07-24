@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 import handStates from './handStates';  // Importing hand state configurations
 
-const URL = 'http://172.21.113.211:5000/chopsticks';  // Base URL for backend API
+const URL = 'http://172.18.4.181:5000/chopsticks';  // Base URL for backend API
 
 const App = () => {
   // State initialization for the game board
@@ -25,6 +25,19 @@ const App = () => {
   const [board, setBoard] = useState(initialBoard);
   const [firstClick, setFirstClick] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(0);
+
+  // Function to reset the game state
+  const handleReset = useCallback(() => {
+    axios.get(`${URL}/reset`)
+      .then(response => {
+        console.log('Game reset successfully:', response.data);
+        updatePlayer();
+        updateBoard();
+      })
+      .catch(error => {
+        console.error('Failed to reset game:', error);
+      });
+  }, [URL]);
 
   // Function to fetch and update the board state from the backend
   const updateBoard = useCallback(() => {
@@ -145,19 +158,6 @@ const App = () => {
       setFirstClick(null);
     }
   }, [firstClick, playerTurn, player1cells, player2cells, hands, URL, updatePlayer, updateBoard]);
-
-  // Function to reset the game state
-  const handleReset = useCallback(() => {
-    axios.get(`${URL}/reset`)
-      .then(response => {
-        console.log('Game reset successfully:', response.data);
-        updatePlayer();
-        updateBoard();
-      })
-      .catch(error => {
-        console.error('Failed to reset game:', error);
-      });
-  }, [URL, updateBoard, updatePlayer]);
 
   // Main component render method
   return (
