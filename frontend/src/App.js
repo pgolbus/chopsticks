@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 import handStates from './handStates';  // Importing hand state configurations
 
-const URL = 'http://172.18.4.181:5000/chopsticks';  // Base URL for backend API
+const URL = 'http://localhost:5000/chopsticks';  // Base URL for backend API
 
 const App = () => {
   // State initialization for the game board

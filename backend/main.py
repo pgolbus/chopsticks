@@ -1,12 +1,12 @@
 from flask import Flask, Response, make_response
-from flask_cors import CORS
+# from flask_cors import CORS
 
 from app import configure_logger
 from app.chopstick_controller import get_board_state, get_current_player, get_player_hand, init_game, move, swap
 
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
 
 
 configure_logger()

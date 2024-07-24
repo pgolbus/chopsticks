@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  flask:
+    image: chopsticks_flask:1.0.0
+    container_name: flask_service
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+
+  react:
+    image: chopsticks_react:1.0.0
+    container_name: react_service
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flask
