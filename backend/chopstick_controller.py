@@ -14,6 +14,14 @@ VIEW = ChopstickView()
 
 logger = logging.getLogger(__name__)
 
+# TODO: Test me
+def init_game() -> None:
+    """
+    Initialize the game.
+    """
+    MODEL.init_game()
+    logger.info("Initialized game.")
+
 def change_player() -> None:
     """
     Change the current player to the next player.
@@ -40,13 +48,19 @@ def get_winner() -> int:
     Returns:
         int: The winner (0 or 1) or -1 if no one has won.
     """
+    return MODEL.get_winner()
+
+def set_winner() -> None:
+    """
+    Inform the model of the current winner of the game
+    """
     if check_win():
         change_player()
         winner = MODEL.get_current_player()
         logger.info(f"Player {winner} has won the game.")
-        return winner
-    logger.info("No player has won yet.")
-    return -1
+        MODEL.set_winner(winner)
+    else:
+        logger.info("No player has won yet.")
 
 def get_current_player() -> Response:
     """
@@ -57,6 +71,26 @@ def get_current_player() -> Response:
     """
     current_player = MODEL.get_current_player()
     return VIEW.get_player(current_player)
+
+def get_player_hand(player: str, hand: str) -> Response:
+    """
+    Get the value of a specific hand for a player.
+
+    Args:
+        player (str): The index of the player in the array of players.
+        hand (str): The hand to get the value of.
+
+    Returns:
+        Response: Flask response object containing the value of the hand.
+    """
+    try:
+        player = int(player)
+    except ValueError:
+        e = ValueError(INVALID_PLAYER_ERROR_MSG)
+        logger.error(e)
+        return VIEW.error(str(e))
+    player_obj = MODEL.get_player_hands(player)
+    return VIEW.get_hand(player_obj, hand)
 
 def validate_player(player: str) -> None:
     """
@@ -81,6 +115,7 @@ def validate_player(player: str) -> None:
         display_player = MODEL.get_current_player() + 1
         logger.error(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
         raise ValueError(WRONG_PLAYER_ERROR_MSG.format(current_player=display_player))
+    return player
 
 def validate_hand(hand: str) -> None:
     """
@@ -114,12 +149,12 @@ def move(player: str, from_hand: str, to_hand: str) -> Response:
     """
     try:
         logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
-        validate_player(player)
+        player = validate_player(player)
         validate_hand(from_hand)
         validate_hand(to_hand)
         MODEL.move(MODEL.get_current_player(), from_hand, to_hand)
         logger.info(f"Move completed.")
-        return end_move()
+        end_move()
     except ValueError as e:
         logger.error(e)
         return VIEW.error(str(e))
@@ -140,26 +175,42 @@ def swap(player: str, hand: str, fingers: str) -> Response:
         ValueError: If player is not "0" or "1".
         ValueError: If hand is not "left" or "right".
     """
+    logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
     try:
-        logger.info(f"Player {player} is attempting to swap {fingers} fingers from {hand}.")
-        validate_player(player)
+        player = validate_player(player)
         validate_hand(hand)
+    except ValueError as e:
+        logger.error(e)
+        return VIEW.error(str(e))
+    try:
+        fingers = int(fingers)
+    except ValueError:
+        e = ValueError("Fingers must be an integer")
+        logger.error(e)
+        return VIEW.error(str(e))
+    try:
         MODEL.swap(player, hand, fingers)
         logger.info(f"Swap completed for player {player}.")
-        return end_move()
+        end_move()
     except ValueError as e:
         logger.error(e)
         return VIEW.error(str(e))
 
-def end_move() -> Response:
+def end_move() -> None:
     """
-    Get the result of the last move and display it using the view.
-
-    Returns:
-        Response: The Flask response object containing the move result.
+    Change players and check for a winner
     """
     change_player()
-    winner = get_winner()
+    set_winner()
+
+def get_board_state() -> Response:
+    """
+    Get the current state of the board and display it using the view.
+
+    Returns:
+        Response: The Flask response object containing the board state.
+    """
     player1 = MODEL.get_player_hands(0)
     player2 = MODEL.get_player_hands(1)
-    return VIEW.move_result(player1, player2, winner)
+    winner = MODEL.get_winner()
+    return VIEW.board_state(player1, player2, winner)

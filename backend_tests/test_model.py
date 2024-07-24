@@ -11,6 +11,21 @@ def test_init_board():
     assert model.players[1].left == 1
     assert model.players[1].right == 1
 
+def test_get_winner():
+    model = ChopstickModel()
+    assert model.get_winner() == -1
+    model.winner = 0
+    assert model.get_winner() == 0
+    model.winner = 1
+    assert model.get_winner() == 1
+
+def test_set_winner():
+    model = ChopstickModel()
+    model.set_winner(0)
+    assert model.winner == 0
+    model.set_winner(1)
+    assert model.winner == 1
+
 def test_get_player_hands():
     model = ChopstickModel()
     model.players[0].left = 0

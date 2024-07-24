@@ -10,7 +10,7 @@ class ChopstickView:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def move_result(self, player1: Player, player2: Player, winner: int):
+    def board_state(self, player1: Player, player2: Player, winner: int = 1):
         """
         Create a response for the move result.
 
@@ -46,6 +46,23 @@ class ChopstickView:
             "player": player
         }
         self.logger.info(f"Get player returned: {response_data}")
+        return make_response(jsonify(response_data), 200)
+
+    def get_hand(self, player: Player, hand: str):
+        """
+        Create a response for getting the value of a specific hand.
+
+        Args:
+            player (Player): The player.
+            hand (str): The hand to get the value of.
+
+        Returns:
+            Response: A Flask response object containing the value of the hand.
+        """
+        response_data = {
+            "hand": getattr(player, hand)
+        }
+        self.logger.info(f"Get hand returned: {response_data}")
         return make_response(jsonify(response_data), 200)
 
     def error(self, message: str):

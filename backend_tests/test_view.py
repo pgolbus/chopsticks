@@ -11,14 +11,14 @@ def app_context():
     with app.app_context():
         yield
 
-def test_move_result(app_context):
+def test_board_state(app_context):
     chopstick_view = ChopstickView()
     player1 = Player(left=2, right=3)
     player2 = Player(left=1, right=4)
     winner = -1
 
     with app.test_request_context():
-        response = chopstick_view.move_result(player1, player2, winner)
+        response = chopstick_view.board_state(player1, player2, winner)
         assert response.status_code == 200
         assert response.get_json() == {
             "player1_left": 2,
@@ -28,15 +28,15 @@ def test_move_result(app_context):
             "winner": -1
         }
 
-def test_get_player(app_context):
+def test_get_hand(app_context):
     chopstick_view = ChopstickView()
-    player = 0
+    player = Player(left=2, right=3)
 
     with app.test_request_context():
-        response = chopstick_view.get_player(player)
+        response = chopstick_view.get_hand(player, "left")
         assert response.status_code == 200
         assert response.get_json() == {
-            "player": 0
+            "hand": 2
         }
 
 def test_error(app_context):

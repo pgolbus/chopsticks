@@ -19,9 +19,35 @@ class ChopstickModel:
         each having one chopstick in each hand.
         """
         self.logger = logging.getLogger(__name__)
+        self.init_game()
+
+    def init_game(self) -> None:
+        """
+        Initialize the game.
+        """
         self.players = [Player(1, 1), Player(1, 1)]
         self.current_player = 0
+        self.winner = -1
         self.logger.info("Initialized ChopstickModel with two players.")
+
+    def get_winner(self) -> int:
+        """
+        Retrieve the winner of the game.
+
+        Returns:
+            int: The index of the winner (0 or 1) or -1 if the game is not over.
+        """
+        return self.winner
+
+    def set_winner(self, winner: int) -> None:
+        """
+        Set the winner of the game.
+
+        Args:
+            winner (int): The index of the winner (0 or 1).
+        """
+        self.winner = winner
+        self.logger.info(f"Player {winner} has won the game.")
 
     def get_current_player(self) -> int:
         """
