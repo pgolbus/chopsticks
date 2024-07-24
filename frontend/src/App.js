@@ -1,22 +1,23 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
-import handStates from './handStates';
+import handStates from './handStates';  // Importing hand state configurations
 
-const URL = 'http://172.21.113.211:5000/chopsticks';
+const URL = 'http://172.21.113.211:5000/chopsticks';  // Base URL for backend API
 
 const App = () => {
+  // State initialization for the game board
+  // This could all be better...
   const initialBoard = Array(9).fill('');
-  // this could be better...
-  const player1cells = [0, 6];
-  const player2cells = [2, 8];
-  const hands = {
+  const player1cells = [0, 6];  // Cells controlled by Player 1
+  const player2cells = [2, 8];  // Cells controlled by Player 2
+  const hands = {  // Mapping of cell indexes to hand names
     0: "left",
     2: "left",
     6: "right",
     8: "right"
   };
-  const playerCells = [...player1cells, ...player2cells];
+  const playerCells = [...player1cells, ...player2cells];  // Combined cells for easier reference
   const player1TextCell = 3;
   const player1Text = "Player 1";
   const player2TextCell = 5;
@@ -25,6 +26,7 @@ const App = () => {
   const [firstClick, setFirstClick] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(0);
 
+  // Function to fetch and update the board state from the backend
   const updateBoard = useCallback(() => {
     console.log("updateBoard called");
     axios.get(`${URL}/get_board_state`)
@@ -47,14 +49,17 @@ const App = () => {
       });
   }, [URL, handleReset]);
 
+  // Effect to initialize the board on component mount
   useEffect(() => {
-    updateBoard(); // Fetch initial board state on mount
-  }, [updateBoard]); // Dependency array with updateBoard
+    updateBoard();
+  }, [updateBoard]);
 
+  // Effect to log changes in the board state
   useEffect(() => {
     console.log("Board state changed:", board);
   }, [board]);
 
+  // Function to render cells based on their type and state
   const renderCell = (cell, index) => {
     if (playerCells.includes(index)) {
       return handStates[cell];
@@ -65,7 +70,8 @@ const App = () => {
     }
   };
 
-  const updatePlayer = () => {
+  // Function to fetch the current player's turn from the backend
+  const updatePlayer = useCallback(() => {
     axios.get(`${URL}/get_current_player`)
       .then(response => {
         setPlayerTurn(response.data.player);
@@ -73,9 +79,10 @@ const App = () => {
       .catch(error => {
         console.error('Error fetching current player:', error);
       });
-  };
+  }, [URL]);
 
-  const firstClickSetter = (index, player, hand) => {
+  // Function to handle the first click in a game move
+  const firstClickSetter = useCallback((index, player, hand) => {
     axios.get(`${URL}/get_player_hand/${player}/${hand}`)
       .then(response => {
         console.log("Player hand response:", response.data);
@@ -91,17 +98,17 @@ const App = () => {
           console.error('Error fetching data:', error);
         }
       });
-  };
+  }, [URL]);
 
-  const handleClick = (index) => {
+  // Function to handle subsequent clicks and perform game actions like move or swap
+  // TODO: handle all the on-purpose errors eg moving from a hand
+  //       w/ no fingers
+  const handleClick = useCallback((index) => {
     console.log("handleClick called with index:", index);
     if (firstClick === null) {
-      updatePlayer()
-      if (
-            (playerTurn === 0 && !player1cells.includes(index)) ||
-            (playerTurn === 1 && !player2cells.includes(index))
-          )
-      {
+      updatePlayer();
+      if ((playerTurn === 0 && !player1cells.includes(index)) ||
+          (playerTurn === 1 && !player2cells.includes(index))) {
         window.alert('You must start with one of your own hands');
         throw new Error('Invalid starting hand');
       }
@@ -137,9 +144,10 @@ const App = () => {
       }
       setFirstClick(null);
     }
-  }
+  }, [firstClick, playerTurn, player1cells, player2cells, hands, URL, updatePlayer, updateBoard]);
 
-  const handleReset = () => {
+  // Function to reset the game state
+  const handleReset = useCallback(() => {
     axios.get(`${URL}/reset`)
       .then(response => {
         console.log('Game reset successfully:', response.data);
@@ -149,8 +157,9 @@ const App = () => {
       .catch(error => {
         console.error('Failed to reset game:', error);
       });
-  };
+  }, [URL, updateBoard, updatePlayer]);
 
+  // Main component render method
   return (
     <div className="App">
       <h1>Chopsticks</h1>
