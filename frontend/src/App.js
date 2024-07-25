@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 import handStates from './handStates';  // Importing hand state configurations
 
-const URL = 'http://flask_service/chopsticks';  // Base URL for backend API
+const URL = "http://127.0.0.1:5000/chopsticks/"
 
 const App = () => {
   // State initialization for the game board
@@ -37,7 +37,7 @@ const App = () => {
       .catch(error => {
         console.error('Failed to reset game:', error);
       });
-  }, [URL]);
+  }, []);
 
   // Function to fetch and update the board state from the backend
   const updateBoard = useCallback(() => {

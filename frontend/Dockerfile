@@ -13,6 +13,10 @@ RUN npm install
 # Copy the rest of the application code to the working directory
 COPY . .
 
+ARG FLOATING_IP=82.180.161.242
+
+ENV REACT_APP_API_URL=http://${FLOATING_IP}:5000/chopsticks/
+
 # Build the React application
 RUN npm run build
 

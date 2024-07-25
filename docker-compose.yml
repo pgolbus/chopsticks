@@ -8,8 +8,6 @@ services:
     container_name: flask_service
     ports:
       - "5000:5000"
-    environment:
-      - FLASK_ENV=development
 
   react:
     build:
@@ -21,6 +19,3 @@ services:
     depends_on:
       - flask
 
-networks:
-  default:
-    driver: bridge
