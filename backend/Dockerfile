@@ -5,7 +5,10 @@ FROM python:3.8-slim
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY . .
+
+# Set the PYTHONPATH environment variable
+ENV PYTHONPATH=/app
 
 # Normally we would install any needed packages specified in requirements.txt
 # RUN pip install --no-cache-dir -r requirements.txt
@@ -17,5 +20,4 @@ RUN pip install -r requirements.lock
 EXPOSE 5000
 
 # Run app.py when the container launches
-CMD ["python", "main.py"]
-
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
