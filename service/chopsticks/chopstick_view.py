@@ -75,6 +75,7 @@ class ChopstickView:
         Returns:
             Response: A Flask response object containing the error message.
         """
+        self.logger.error(message)
         response_data = {
             "error": message
         }

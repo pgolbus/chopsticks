@@ -4,6 +4,7 @@ import sys
 
 from flask import current_app, has_request_context
 
+
 @dataclass
 class Player:
     left: int

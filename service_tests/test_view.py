@@ -1,7 +1,8 @@
 import pytest
 from flask import Flask
-from backend import Player
-from backend.chopstick_view import ChopstickView
+
+from service.chopsticks import Player
+from service.chopsticks.chopstick_view import ChopstickView
 
 # Set up Flask app for testing
 app = Flask(__name__)

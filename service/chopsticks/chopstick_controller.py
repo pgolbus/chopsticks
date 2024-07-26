@@ -147,6 +147,7 @@ def move(player: str, from_hand: str, to_hand: str) -> Response:
         ValueError: If player is not "0" or "1".
         ValueError: If from_hand or to_hand are not "left" or "right".
     """
+    logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
     try:
         logger.info(f"Player {player} is attempting to move from {from_hand} to {to_hand}.")
         player = validate_player(player)

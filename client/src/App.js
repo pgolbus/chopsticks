@@ -3,7 +3,16 @@ import axios from 'axios';
 import './App.css';
 import handStates from './handStates';  // Importing hand state configurations
 
-const URL = 'http://172.18.4.181:5000/chopsticks';  // Base URL for backend API
+const URL = process.env.REACT_APP_FLASK_API;
+console.log("apiUrl: ", URL);
+
+axios.get(`${URL}/healthcheck`)
+  .then(response => {
+    console.log('Health check response:', response.data);
+  })
+  .catch(error => {
+    console.error('Health check failed:', error);
+  });
 
 const App = () => {
   // State initialization for the game board
