@@ -1,0 +1,44 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 200px);
+  grid-gap: 5px;
+}
+
+.square {
+  width: 200px;
+  height: 200px;
+  background-color: #fff;
+  border: 2px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  cursor: default; /* Default cursor for non-clickable cells */
+  white-space: pre; /* Preserve whitespace for ASCII art */
+}
+
+.square.clickable {
+  cursor: pointer; /* Pointer cursor for clickable cells */
+  background-color: #e0e0e0; /* Light grey background for clickable cells */
+}
+
+.square.clickable:hover {
+  background-color: #d0d0d0; /* Slightly darker grey on hover for clickable cells */
+}
+
+.active-player {
+  font-weight: bold;
+  background-color: #f0f0f0;
+  font-size: 18px; /* Slightly bigger font size */
+}
+
+.reset-button {
+  margin-top: 20px; /* Adds space between the board and the button */
+}
