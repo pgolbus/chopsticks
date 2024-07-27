@@ -158,7 +158,7 @@ def move(player: str, from_hand: str, to_hand: str) -> Response:
         end_move()
     except ValueError as e:
         logger.error(e)
-        return VIEW.error(str(e))
+        raise e
 
 def swap(player: str, hand: str, fingers: str) -> Response:
     """
@@ -182,20 +182,20 @@ def swap(player: str, hand: str, fingers: str) -> Response:
         validate_hand(hand)
     except ValueError as e:
         logger.error(e)
-        return VIEW.error(str(e))
+        raise e
     try:
         fingers = int(fingers)
     except ValueError:
         e = ValueError("Fingers must be an integer")
         logger.error(e)
-        return VIEW.error(str(e))
+        raise e
     try:
         MODEL.swap(player, hand, fingers)
         logger.info(f"Swap completed for player {player}.")
         end_move()
     except ValueError as e:
         logger.error(e)
-        return VIEW.error(str(e))
+        raise e
 
 def end_move() -> None:
     """

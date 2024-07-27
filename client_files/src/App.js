@@ -105,7 +105,9 @@ const App = () => {
 
   // Function to handle the first click in a game move
   const firstClickSetter = useCallback((index, player, hand) => {
-    axios.get(`${URL}/get_player_hand/${player}/${hand}`)
+    const firstClickUrl = `${URL}/get_player_hand/${player}/${hand}`;
+    console.log("firstClickUrl:", firstClickUrl);
+    axios.get(firstClickUrl)
       .then(response => {
         console.log("Player hand response:", response.data);
         let fingers = response.data.hand;
@@ -123,8 +125,6 @@ const App = () => {
   }, [URL]);
 
   // Function to handle subsequent clicks and perform game actions like move or swap
-  // TODO: handle all the on-purpose errors eg moving from a hand
-  //       w/ no fingers
   const handleClick = useCallback((index) => {
     console.log("handleClick called with index:", index);
     if (firstClick === null) {
@@ -144,25 +144,51 @@ const App = () => {
       if ((player1cells.includes(firstClick) && player1cells.includes(index)) ||
           (player2cells.includes(firstClick) && player2cells.includes(index))) {
         let toSwap = window.prompt('How many would you like to swap?');
-        axios.get(`${URL}/swap/${playerTurn}/${hands[firstClick]}/${toSwap}`)
+        const swapUrl = `${URL}/swap/${playerTurn}/${hands[firstClick]}/${toSwap}`;
+        console.log("swapUrl:", swapUrl);
+        axios.get(swapUrl)
         .then(response => {
           console.log("Swap response:", response.data);
           updatePlayer();
           updateBoard();
         })
         .catch(error => {
-          console.error('Error fetching data:', error);
+          // Handle error response
+          if (error.response && error.response.data && error.response.data.error) {
+            if (error.response.data.error === 'Cannot swap all / more fingers than you have.') {
+              console.error('Cannot swap all / more fingers than you have.', error.response.data.error);
+              window.alert('Cannot swap all / more fingers than you have. Try again.');
+              setFirstClick(null);
+            } else {
+              console.error('Other error occurred:', error.response.data.error);
+              // Handle other errors
+            }
+          }
         });
       } else {
-        axios.get(`${URL}/move/${playerTurn}/${hands[firstClick]}/${hands[index]}`)
+        const moveUrl = `${URL}/move/${playerTurn}/${hands[firstClick]}/${hands[index]}`;
+        console.log("moveUrl:", moveUrl);
+        axios.get(moveUrl)
           .then(response => {
             console.log("Move response:", response.data);
             updatePlayer();
             updateBoard();
           })
           .catch(error => {
-            console.error('Error fetching data:', error);
-          });
+            // Handle error response
+            if (error.response && error.response.data && error.response.data.error) {
+              if (error.response.data.error === 'Cannot move from / to an empty hand.') {
+                console.error('Cannot move from / to an empty hand.:', error.response.data.error);
+                window.alert('Cannot move from / to an empty hand.  Try again.');
+                setFirstClick(null);
+              } else {
+                console.error('Other error occurred:', error.response.data.error);
+                // Handle other errors
+              }
+            } else {
+              console.error('Error fetching data:', error);
+            }
+          })
       }
       setFirstClick(null);
     }

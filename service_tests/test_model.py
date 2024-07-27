@@ -26,6 +26,20 @@ def test_set_winner():
     model.set_winner(1)
     assert model.winner == 1
 
+def test_get_current_player():
+    model = ChopstickModel()
+    assert model.get_current_player() == 0
+    model.current_player = 1
+    assert model.get_current_player() == 1
+
+def test_change_player_player():
+    model = ChopstickModel()
+    assert model.current_player == 0
+    model.change_player()
+    assert model.current_player == 1
+    model.change_player()
+    assert model.current_player == 0
+
 def test_get_player_hands():
     model = ChopstickModel()
     model.players[0].left = 0
