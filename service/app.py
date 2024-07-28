@@ -1,7 +1,8 @@
+import click
 from flask import Flask, jsonify, make_response, Response
 from flask_cors import CORS
 
-from chopsticks.chopstick_controller import get_board_state, get_current_player, get_player_hand, init_game, move, swap
+from chopsticks.chopstick_controller import get_board_state, get_current_player, get_player_hand, init_game, init_model_and_view, move, swap
 from chopsticks.chopstick_view import ChopstickView
 
 app = Flask(__name__)
@@ -56,5 +57,12 @@ def swap_fingers(player: str, hand: str, fingers: str) -> Response:
         return VIEW.error(str(e))
     return make_response(jsonify({"message": "Swap successful"}), 200)
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--dao-id' , default='passthrough', help='DAO ID')
+@click.option('--sqlite-db-path', default='chopsticks.db', help='sqlite Database path')
+def run(dao_id: str, sqlite_db_path:str) -> None:
+    init_model_and_view(VIEW, dao_identifier=dao_id, sqlite_db_path=sqlite_db_path)
     app.run(host="0.0.0.0", debug=True)
+
+if __name__ == '__main__':
+    run()

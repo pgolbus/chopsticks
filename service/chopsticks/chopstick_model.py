@@ -1,7 +1,8 @@
 import logging
-from typing import List, Optional
+from typing import Any
 
-from . import Player
+from chopsticks import Player
+from chopsticks.dao import get_dao
 
 FINGERS = 5
 
@@ -11,24 +12,27 @@ SWAP_ERROR_MSG = "Cannot swap all / more fingers than you have."
 
 class ChopstickModel:
 
-    players: Optional[List[Player]]
-
-    def __init__(self):
+    def __init__(self, dao_id: str = "passthrough", *args: Any, **kwargs: Any):
         """
-        Initialize the ChopstickModel with two players,
-        each having one chopstick in each hand.
+        Initialize the ChopstickModel with a configurable DAO.
+
+        Args:
+            dao_id (str, optional): The identifier for the data access object to use.
+                                    Defaults to "passthrough" which is a simple in-memory DAO.
+            **dao_kwargs: Additional keyword arguments to pass to the DAO constructor.
         """
         self.logger = logging.getLogger(__name__)
+        self.dao = get_dao(dao_id, *args, **kwargs)
         self.init_game()
 
     def init_game(self) -> None:
         """
-        Initialize the game.
+        Initialize the game using the DAO.
         """
-        self.players = [Player(1, 1), Player(1, 1)]
+        self.players = self.dao.init()
         self.current_player = 0
         self.winner = -1
-        self.logger.info("Initialized ChopstickModel with two players.")
+        self.logger.info("Game initialized with two players.")
 
     def get_winner(self) -> int:
         """
@@ -76,15 +80,15 @@ class ChopstickModel:
             Player: The player corresponding to the identifier.
         """
         self.logger.debug(f"Retrieving hands for player {player}.")
-        return self.players[player]
+        return self.dao.get_player(player)
 
-    def move(self, player: int, hand_from: str, hand_to: str) -> None:
+    def move(self, player_id: int, hand_from: str, hand_to: str) -> None:
         """
         Perform a move by transferring chopsticks from one hand of the
         current player to one hand of the opponent.
 
         Args:
-            player (int): The index of the current player (0 or 1).
+            player_id (int): The index of the current player (0 or 1).
             hand_from (str): The hand of the current player to transfer from.
                              Expected values are "left" or "right".
             hand_to (str): The hand of the opponent to transfer to.
@@ -93,9 +97,9 @@ class ChopstickModel:
         Raises:
             ValueError: If the hand_from or hand_to is empty.
         """
-        self.logger.info(f"Player {player} moving from {hand_from} to {hand_to}.")
-        from_player = self.players[player]
-        to_player = self.players[(player + 1) % 2]
+        self.logger.info(f"Player {player_id} moving from {hand_from} to {hand_to}.")
+        from_player = self.dao.get_player(player_id)
+        to_player = self.dao.get_player((player_id + 1) % 2)
 
         if hand_from == "left":
             if from_player.left == 0:
@@ -112,24 +116,23 @@ class ChopstickModel:
             if to_player.left == 0:
                 self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
-            to_player.left += add
-            to_player.left %= FINGERS
+            self.dao.set_player_hand((player_id + 1) % 2, "left", (to_player.left + add) % FINGERS)
+
         else:
             if to_player.right == 0:
                 self.logger.error(EMPTY_HAND_ERROR_MSG)
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
-            to_player.right += add
-            to_player.right %= FINGERS
+            self.dao.set_player_hand((player_id + 1) % 2, "right", (to_player.right + add) % FINGERS)
 
-        self.logger.debug(f"Move completed: Player {player} ({hand_from}) to Player {(player + 1) % 2} ({hand_to}).")
+        self.logger.debug(f"Move completed: Player {player_id} ({hand_from}) to Player {(player_id + 1) % 2} ({hand_to}).")
 
-    def swap(self, player: int, starting_hand: str, fingers_to_swap: int) -> None:
+    def swap(self, player_id: int, starting_hand: str, fingers_to_swap: int) -> None:
         """
         Swap the given number of fingers between the two hands of the given
         player.
 
         Args:
-            player (int): The index of the current player (0 or 1).
+            player_id (int): The index of the current player (0 or 1).
             starting_hand (str): The hand to start with.
                                  Expected values are "left" or "right".
             fingers_to_swap (int): The number of fingers to swap (1 to 4).
@@ -139,25 +142,24 @@ class ChopstickModel:
                         not between 1 and 4, or if trying to swap more fingers
                         than available in the starting hand.
         """
-        self.logger.info(f"Player {player} swapping {fingers_to_swap} fingers from {starting_hand}.")
-        if self.players[player].left == 0 or self.players[player].right == 0:
+        self.logger.info(f"Player {player_id} swapping {fingers_to_swap} fingers from {starting_hand}.")
+        player = self.dao.get_player(player_id)
+        if player.left == 0 or player.right == 0:
             self.logger.error(EMPTY_HAND_ERROR_MSG)
             raise ValueError(EMPTY_HAND_ERROR_MSG)
         if starting_hand == "left":
-            if self.players[player].left < fingers_to_swap or \
-               self.players[player].left - fingers_to_swap < 1:
+            if player.left < fingers_to_swap or \
+               player.left - fingers_to_swap < 1:
                 self.logger.error(SWAP_ERROR_MSG)
                 raise ValueError(SWAP_ERROR_MSG)
-            self.players[player].left -= fingers_to_swap
-            self.players[player].right += fingers_to_swap
-            self.players[player].right %= FINGERS
+            self.dao.set_player_hand(player_id, "left", player.left - fingers_to_swap)
+            self.dao.set_player_hand(player_id, "right", (player.right + fingers_to_swap) % FINGERS)
         else:
-            if self.players[player].right < fingers_to_swap or \
-               self.players[player].right - fingers_to_swap < 1:
+            if player.right < fingers_to_swap or \
+               player.right - fingers_to_swap < 1:
                 self.logger.error(SWAP_ERROR_MSG)
                 raise ValueError(SWAP_ERROR_MSG)
-            self.players[player].left += fingers_to_swap
-            self.players[player].right -= fingers_to_swap
-            self.players[player].left %= FINGERS
+            self.dao.set_player_hand(player_id, "right", player.right - fingers_to_swap)
+            self.dao.set_player_hand(player_id, "left", (player.left + fingers_to_swap) % FINGERS)
 
-        self.logger.debug(f"Swap completed: Player {player} swapped {fingers_to_swap} fingers from {starting_hand}.")
+        self.logger.debug(f"Swap completed: Player {player_id} swapped {fingers_to_swap} fingers from {starting_hand}.")

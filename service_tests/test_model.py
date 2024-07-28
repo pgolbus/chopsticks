@@ -3,13 +3,21 @@ import pytest
 from service.chopsticks import Player
 from service.chopsticks.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
 
+@pytest.fixture
+def mock_dao(mocker):
+    mock_dao = mocker.MagicMock()
+    mocker.patch('service.chopsticks.chopstick_model.get_dao', return_value=mock_dao)
+    return mock_dao
 
-def test_init_board():
-    model = ChopstickModel()
-    assert model.players[0].left == 1
-    assert model.players[0].right == 1
-    assert model.players[1].left == 1
-    assert model.players[1].right == 1
+def test_chopstick_model_init_game(mock_dao):
+    # Create a flag to control the 'create' argument
+    create_flag = True
+
+    # Instantiate the ChopstickModel with the mock DAO
+    model = ChopstickModel(dao_id="mock", create=create_flag)
+
+    # Assert that init was called correctly on the DAO
+    mock_dao.init.assert_called_once_with(create=create_flag)
 
 def test_get_winner():
     model = ChopstickModel()
@@ -40,81 +48,125 @@ def test_change_player_player():
     model.change_player()
     assert model.current_player == 0
 
-def test_get_player_hands():
+def test_get_player_hands(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 0
-    model.players[0].right = 3
-    model.players[1].left = 1
-    model.players[1].right = 2
-    assert model.get_player_hands(0) == Player(0, 3)
+    mock_dao.get_player.side_effect = [
+        Player(1, 3),
+        Player(1, 2),
+    ]
+    assert model.get_player_hands(0) == Player(1, 3)
     assert model.get_player_hands(1) == Player(1, 2)
 
-def test_move():
+def test_move(mock_dao):
     model = ChopstickModel()
+
+    mock_dao.get_player.side_effect = [
+        Player(1, 3),
+        Player(1, 2),
+        Player(2, 3),
+        Player(4, 1),
+    ]
+
     model.move(0, "left", "left")
-    assert model.players[1].left == 2
+    mock_dao.set_player_hand.assert_called_with(1, "left", 2)
+
+    mock_dao.reset_mock()
+
     model.move(1, "left", "right")
-    assert model.players[0].right == 3
+    mock_dao.set_player_hand.assert_called_with(0, "right", 3)
 
-def test_mod_move():
+def test_mod_move(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 4
-    model.players[1].left = 2
+    mock_dao.get_player.side_effect = [
+        Player(4, 3),
+        Player(2, 2),
+        Player(2, 3),
+        Player(3, 1),
+    ]
     model.move(0, "left", "left")
-    assert model.players[1].left == 1
+    mock_dao.set_player_hand.assert_called_with(1, "left", 1)
+
+    mock_dao.reset_mock()
+
     model.move(1, "left", "left")
-    assert model.players[0].left == 0
+    mock_dao.set_player_hand.assert_called_with(0, "left", 0)
 
-def test_swap_move():
+def test_swap_move(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 2
-    model.players[0].right = 2
-    model.players[1].left = 1
-    model.players[1].right = 4
+    mock_dao.get_player.side_effect = [
+        Player(2, 2),
+        Player(1, 4),
+    ]
     model.swap(0, "left", 1)
-    assert model.players[0].left == 1
-    assert model.players[0].right == 3
-    model.swap(1, "right", 2)
-    assert model.players[1].left == 3
-    assert model.players[1].right == 2
+    expected_calls = [
+        (0, "left", 1),
+        (0, "right", 3)
+    ]
+    actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
+    assert actual_calls == expected_calls
 
-def test_swap_mod_move():
+    mock_dao.reset_mock()
+
+    model.swap(1, "right", 2)
+    expected_calls = [
+        (1, "right", 2),
+        (1, "left", 3)
+    ]
+    actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
+    assert actual_calls == expected_calls
+
+def test_swap_mod_move(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 4
-    model.players[0].right = 3
-    model.players[1].left = 4
-    model.players[1].right = 4
+
+    mock_dao.get_player.side_effect = [
+        Player(4, 3),
+        Player(4, 4),
+    ]
+
     model.swap(0, "left", 3)
-    assert model.players[0].left == 1
-    assert model.players[0].right == 1
-    model.swap(1, "right", 2)
-    assert model.players[1].left == 1
-    assert model.players[1].right == 2
+    expected_calls = [
+        (0, "left", 1),
+        (0, "right", 1)
+    ]
+    actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
+    assert actual_calls == expected_calls
 
-def test_move_from_zero():
+    mock_dao.reset_mock()
+
+
+    model.swap(1, "right", 2)
+    expected_calls = [
+        (1, "right", 2),
+        (1, "left", 1)
+    ]
+    actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
+    assert actual_calls == expected_calls
+
+
+def test_move_from_zero(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 0
+    mock_dao.get_player.return_value = Player(0, 3)
     with pytest.raises(ValueError,
                        match=EMPTY_HAND_ERROR_MSG):
         model.move(0, "left", "left")
 
-def test_move_to_zero():
+def test_move_to_zero(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 0
+    mock_dao.get_player.return_value = Player(0, 3)
     with pytest.raises(ValueError,
                        match=EMPTY_HAND_ERROR_MSG):
         model.move(1, "left", "left")
 
-def test_swap_to_zero():
+def test_swap_to_zero(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 0
+    mock_dao.get_player.return_value = Player(0, 3)
     with pytest.raises(ValueError,
                        match=EMPTY_HAND_ERROR_MSG):
         model.swap(0, "right", 1)
 
-def test_swap_from_zero():
+def test_swap_from_zero(mock_dao):
     model = ChopstickModel()
-    model.players[0].left = 0
+    mock_dao.get_player.return_value = Player(0, 3)
     with pytest.raises(ValueError,
                        match=EMPTY_HAND_ERROR_MSG):
         model.swap(0, "left", 1)

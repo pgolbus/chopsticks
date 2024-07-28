@@ -1,20 +1,33 @@
 import logging
+from typing import Any
+
 from flask import Response
 
-from .chopstick_model import ChopstickModel
-from .chopstick_view import ChopstickView
+from chopsticks.chopstick_model import ChopstickModel
+from chopsticks.chopstick_view import ChopstickView
 
 INVALID_HAND_ERROR_MSG = "Hand must be 'left' or 'right'"
 INVALID_PLAYER_ERROR_MSG = "Player must be an integer, either 0 or 1."
 WRONG_PLAYER_ERROR_MSG = "It is player {current_player}'s turn."
 
-# Create module-level model and view instances
-MODEL = ChopstickModel()
-VIEW = ChopstickView()
+MODEL = None
+VIEW = None
 
 logger = logging.getLogger(__name__)
 
-# TODO: Test me
+def init_model_and_view(view: ChopstickView, dao_identifier: str, *args: Any, **kwargs: Any) -> None:
+    """
+    Initialize the model and view.
+
+    Args:
+        view (ChopstickView): View object for the application.
+        dao_identifier (str): Identifier for the data access object.
+        dao_args (Any): Arguments for the data access object.
+    """
+    global MODEL, VIEW
+    MODEL = ChopstickModel(dao_identifier, *args, **kwargs)
+    VIEW = view
+
 def init_game() -> None:
     """
     Initialize the game.
