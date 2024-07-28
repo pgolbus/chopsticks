@@ -1,23 +1,20 @@
 import pytest
 
-from service.chopsticks import Player
-from service.chopsticks.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
+from chopsticks import Player
+from chopsticks.chopstick_model import ChopstickModel, EMPTY_HAND_ERROR_MSG, SWAP_ERROR_MSG
 
 @pytest.fixture
 def mock_dao(mocker):
     mock_dao = mocker.MagicMock()
-    mocker.patch('service.chopsticks.chopstick_model.get_dao', return_value=mock_dao)
+    mocker.patch('chopsticks.chopstick_model.get_dao', return_value=mock_dao)
     return mock_dao
 
 def test_chopstick_model_init_game(mock_dao):
-    # Create a flag to control the 'create' argument
-    create_flag = True
-
     # Instantiate the ChopstickModel with the mock DAO
-    model = ChopstickModel(dao_id="mock", create=create_flag)
+    model = ChopstickModel(dao_id="mock")
 
     # Assert that init was called correctly on the DAO
-    mock_dao.init.assert_called_once_with(create=create_flag)
+    mock_dao.init.assert_called_once()
 
 def test_get_winner():
     model = ChopstickModel()

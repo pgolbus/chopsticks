@@ -1,8 +1,8 @@
 import sqlite3
 import pytest
 
-from service.chopsticks.dao.sqlite_dao import SQLiteDAO
-from service.chopsticks import Player
+from chopsticks.dao.sqlite_dao import SQLiteDAO
+from chopsticks import Player
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def normalize_sql(sql):
 def test_init_creates_tables(sqlite_dao, mocked_conn):
 
     _, cursor = mocked_conn
-    sqlite_dao.init(create=True)
+    sqlite_dao.init()
 
     # Ensure connect was called correctly
     sqlite3.connect.assert_called_once_with('dummy_path.db')

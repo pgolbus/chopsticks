@@ -1,7 +1,7 @@
 import pytest
 
-from service.chopsticks.dao.passthrough_dao import PassthroughDAO
-from service.chopsticks import Player
+from chopsticks.dao.passthrough_dao import PassthroughDAO
+from chopsticks import Player
 
 
 @pytest.fixture
