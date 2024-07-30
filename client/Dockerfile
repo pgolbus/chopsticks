@@ -12,6 +12,7 @@ COPY package*.json ./
 
 # Install production dependencies.
 RUN npm install
+RUN npm install axios
 
 # Copy local code to the container image.
 COPY . ./
