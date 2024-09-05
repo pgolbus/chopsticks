@@ -88,6 +88,13 @@ def test_mod_move(mock_dao):
     model.move(1, "left", "left")
     mock_dao.set_player_hand.assert_called_with(0, "left", 0)
 
+def test_move_from_zero(mock_dao):
+    model = ChopstickModel()
+    mock_dao.get_player.return_value = Player(0, 3)
+    with pytest.raises(ValueError,
+                       match=EMPTY_HAND_ERROR_MSG):
+        model.move(0, "left", "left")
+
 def test_swap_move(mock_dao):
     model = ChopstickModel()
     mock_dao.get_player.side_effect = [
@@ -118,6 +125,7 @@ def test_swap_mod_move(mock_dao):
     mock_dao.get_player.side_effect = [
         Player(4, 3),
         Player(4, 4),
+        Player(1, 1)
     ]
 
     model.swap(0, "left", 3)
@@ -130,7 +138,6 @@ def test_swap_mod_move(mock_dao):
 
     mock_dao.reset_mock()
 
-
     model.swap(1, "right", 2)
     expected_calls = [
         (1, "right", 2),
@@ -139,40 +146,25 @@ def test_swap_mod_move(mock_dao):
     actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
     assert actual_calls == expected_calls
 
+    mock_dao.reset_mock()
 
-def test_move_from_zero(mock_dao):
-    model = ChopstickModel()
-    mock_dao.get_player.return_value = Player(0, 3)
-    with pytest.raises(ValueError,
-                       match=EMPTY_HAND_ERROR_MSG):
-        model.move(0, "left", "left")
-
-def test_move_to_zero(mock_dao):
-    model = ChopstickModel()
-    mock_dao.get_player.return_value = Player(0, 3)
-    with pytest.raises(ValueError,
-                       match=EMPTY_HAND_ERROR_MSG):
-        model.move(1, "left", "left")
-
-def test_swap_to_zero(mock_dao):
-    model = ChopstickModel()
-    mock_dao.get_player.return_value = Player(0, 3)
-    with pytest.raises(ValueError,
-                       match=EMPTY_HAND_ERROR_MSG):
-        model.swap(0, "right", 1)
+    model.swap(1, "right", 1)
+    expected_calls = [
+        (1, "right", 0),
+        (1, "left", 2)
+    ]
+    actual_calls = [args for args, _ in mock_dao.set_player_hand.call_args_list]
+    assert actual_calls == expected_calls
 
 def test_swap_from_zero(mock_dao):
     model = ChopstickModel()
     mock_dao.get_player.return_value = Player(0, 3)
     with pytest.raises(ValueError,
-                       match=EMPTY_HAND_ERROR_MSG):
+                       match=SWAP_ERROR_MSG):
         model.swap(0, "left", 1)
 
 def test_swap_too_many():
     model = ChopstickModel()
-    with pytest.raises(ValueError,
-                       match=SWAP_ERROR_MSG):
-        model.swap(0, "left", 1)
     with pytest.raises(ValueError,
                        match=SWAP_ERROR_MSG):
         model.swap(0, "left", 2)

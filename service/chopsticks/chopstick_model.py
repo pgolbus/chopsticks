@@ -7,8 +7,8 @@ from chopsticks.dao import get_dao
 FINGERS = 5
 
 
-EMPTY_HAND_ERROR_MSG = "Cannot move from / to an empty hand."
-SWAP_ERROR_MSG = "Cannot swap all / more fingers than you have."
+EMPTY_HAND_ERROR_MSG = "Cannot move from an empty hand."
+SWAP_ERROR_MSG = "Cannot swap more fingers than you have."
 
 class ChopstickModel:
 
@@ -112,18 +112,7 @@ class ChopstickModel:
                 raise ValueError(EMPTY_HAND_ERROR_MSG)
             add = from_player.right
 
-        if hand_to == "left":
-            if to_player.left == 0:
-                self.logger.error(EMPTY_HAND_ERROR_MSG)
-                raise ValueError(EMPTY_HAND_ERROR_MSG)
-            self.dao.set_player_hand((player_id + 1) % 2, "left", (to_player.left + add) % FINGERS)
-
-        else:
-            if to_player.right == 0:
-                self.logger.error(EMPTY_HAND_ERROR_MSG)
-                raise ValueError(EMPTY_HAND_ERROR_MSG)
-            self.dao.set_player_hand((player_id + 1) % 2, "right", (to_player.right + add) % FINGERS)
-
+        self.dao.set_player_hand((player_id + 1) % 2, hand_to, (getattr(to_player, hand_to) + add) % FINGERS)
         self.logger.debug(f"Move completed: Player {player_id} ({hand_from}) to Player {(player_id + 1) % 2} ({hand_to}).")
 
     def swap(self, player_id: int, starting_hand: str, fingers_to_swap: int) -> None:
@@ -144,19 +133,16 @@ class ChopstickModel:
         """
         self.logger.info(f"Player {player_id} swapping {fingers_to_swap} fingers from {starting_hand}.")
         player = self.dao.get_player(player_id)
-        if player.left == 0 or player.right == 0:
-            self.logger.error(EMPTY_HAND_ERROR_MSG)
-            raise ValueError(EMPTY_HAND_ERROR_MSG)
         if starting_hand == "left":
             if player.left < fingers_to_swap or \
-               player.left - fingers_to_swap < 1:
+               player.left - fingers_to_swap < 0:
                 self.logger.error(SWAP_ERROR_MSG)
                 raise ValueError(SWAP_ERROR_MSG)
             self.dao.set_player_hand(player_id, "left", player.left - fingers_to_swap)
             self.dao.set_player_hand(player_id, "right", (player.right + fingers_to_swap) % FINGERS)
         else:
             if player.right < fingers_to_swap or \
-               player.right - fingers_to_swap < 1:
+               player.right - fingers_to_swap < 0:
                 self.logger.error(SWAP_ERROR_MSG)
                 raise ValueError(SWAP_ERROR_MSG)
             self.dao.set_player_hand(player_id, "right", player.right - fingers_to_swap)
